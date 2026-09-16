@@ -945,7 +945,7 @@ async function getToken() {
 // ══════════════════════════════════════════════════════════════════════════════
 // GRAPH API — READ / WRITE EXCEL CELLS
 // ══════════════════════════════════════════════════════════════════════════════
-const GRAPH_BASE = `https://graph.microsoft.com/v1.0/sites/${CONFIG.siteId}/drives/${CONFIG.driveId}/items/${CONFIG.fileId}/workbook`;
+const GRAPH_BASE = `https://graph.microsoft.com/v1.0/drives/${CONFIG.driveId}/items/${CONFIG.fileId}/workbook`;
 
 async function readRange(sheet, range) {
   const token = await getToken();
