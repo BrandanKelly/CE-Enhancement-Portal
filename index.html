@@ -998,8 +998,8 @@ async function writeCell(sheet, cellAddress, value) {
 async function loadData() {
   console.log("loadData called, role:", currentRole?.view, "token:", accessToken ? "present" : "missing");
   const view = currentRole.view;
-  const sheets = view === "ops" ? ["sd","ie","norcal"]
-               : view === "lead" ? ["sd","ie","norcal"]
+  const sheets = (view === "ops" || view === "lead" || view === "cpo")
+               ? ["sd","ie","norcal"]
                : [currentRole.sheet];
 
   for (const sheetKey of sheets) {
@@ -1009,7 +1009,7 @@ async function loadData() {
     if (!items.length) continue;
 
     try {
-      // Read status column G and notes column H for all item rows
+      // Read status column G, notes H, and guidance K for all item rows
       const firstRow = items[0].row;
       const lastRow  = items[items.length - 1].row;
       const [statusVals, notesVals, guidanceVals] = await Promise.all([
@@ -1018,29 +1018,39 @@ async function loadData() {
         readRange(sheetName, `K${firstRow}:K${lastRow}`),
       ]);
 
-      // Read Brandan comments from Operations tab
-      const brandanSheet = CONFIG.sheets.brandan;
-      const bOffset = BRANDAN_OFFSETS[sheetKey];
-      const brandanVals = await readRange(brandanSheet,
-        `I${bOffset}:I${bOffset + items.length - 1}`);
-      const brandanOwners = await readRange(brandanSheet,
-        `J${bOffset}:J${bOffset + items.length - 1}`);
-
-      // Apply to module-level state and DOM
-      items.forEach((item, idx) => {
+      // Store regional data into module-level state right away (critical path)
+      items.forEach((item) => {
         const rowOffset = item.row - firstRow;
-        const status    = statusVals[rowOffset]?.[0] || "Not Started";
-        const note      = notesVals[rowOffset]?.[0]  || "";
-        const bComment  = brandanVals[idx]?.[0]       || "";
-        const bOwner    = brandanOwners[idx]?.[0]     || "";
+        statuses[`${sheetKey}-${item.row}`]  = statusVals[rowOffset]?.[0]   || "Not Started";
+        notes[`${sheetKey}-${item.row}`]     = notesVals[rowOffset]?.[0]    || "";
+        guidances[`${sheetKey}-${item.row}`] = guidanceVals[rowOffset]?.[0] || "";
+      });
 
-        // Store in module-level state
-        const guidance = guidanceVals[rowOffset]?.[0] || "";
-        statuses[`${sheetKey}-${item.row}`] = status;
-        notes[`${sheetKey}-${item.row}`] = note;
+      // Read Brandan comments from Operations tab separately — non-critical.
+      // If this fails, regional status data is already stored and stats will work.
+      let brandanVals  = [];
+      let brandanOwners = [];
+      const brandanSheet = CONFIG.sheets.brandan;
+      const bOffset      = BRANDAN_OFFSETS[sheetKey];
+      if (bOffset !== undefined) {
+        try {
+          [brandanVals, brandanOwners] = await Promise.all([
+            readRange(brandanSheet, `I${bOffset}:I${bOffset + items.length - 1}`),
+            readRange(brandanSheet, `J${bOffset}:J${bOffset + items.length - 1}`),
+          ]);
+        } catch (bErr) {
+          console.warn(`Could not load Brandan comments for ${sheetKey}:`, bErr);
+        }
+      }
+
+      // Apply full data (status + comments) to DOM
+      items.forEach((item, idx) => {
+        const status   = statuses[`${sheetKey}-${item.row}`];
+        const note     = notes[`${sheetKey}-${item.row}`];
+        const guidance = guidances[`${sheetKey}-${item.row}`];
+        const bComment = brandanVals[idx]?.[0]  || "";
+        const bOwner   = brandanOwners[idx]?.[0] || "";
         brandanComments[`${sheetKey}-${item.row}`] = bComment;
-        guidances[`${sheetKey}-${item.row}`] = guidance;
-
         updateItemDOM(sheetKey, item.row, status, note, bComment, bOwner, guidance);
       });
     } catch (e) {
@@ -1049,12 +1059,12 @@ async function loadData() {
     }
   }
 
-  // For ops view — render flagged items after all data loaded
+  // Render flagged items for ops view
   if (currentRole.view === "ops") {
     renderFlaggedItems();
   }
 
-  // Update all region stats
+  // Update all region stats (also hides spinner + triggers CPO stats if present)
   updateAllRegionStats();
 }
 
@@ -1106,23 +1116,32 @@ function updateAllRegionStats() {
     let comp=0, ar=0, ot=0, ip=0;
     items.forEach(item => {
       const st = statuses[`${key}-${item.row}`] || "Not Started";
-      if (st === "Complete") comp++;
-      if (st === "At Risk") ar++;
-      if (st === "Off Track") ot++;
+      if (st === "Complete")    comp++;
+      if (st === "At Risk")     ar++;
+      if (st === "Off Track")   ot++;
       if (st === "In Progress") ip++;
     });
     const u = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-    u(`stat-complete-${key}`, comp);
-    u(`stat-inprogress-${key}`, ip);
-    u(`stat-atrisk-${key}`, ar);
-    u(`stat-offtrack-${key}`, ot);
-    u(`sum-complete-${key}`, comp);
-    u(`sum-atrisk-${key}`, ar);
-    u(`sum-offtrack-${key}`, ot);
+    u(`stat-complete-${key}`,    comp);
+    u(`stat-inprogress-${key}`,  ip);
+    u(`stat-atrisk-${key}`,      ar);
+    u(`stat-offtrack-${key}`,    ot);
+    u(`sum-complete-${key}`,     comp);
+    u(`sum-atrisk-${key}`,       ar);
+    u(`sum-offtrack-${key}`,     ot);
 
     // Also update progress bars on Director pages
     updateMonthProgress(key);
   });
+
+  // Hide the All Regions loading spinner now that data is ready
+  const spinner = document.getElementById("all-regions-loading");
+  if (spinner) spinner.style.display = "none";
+
+  // Update CPO dashboard if it's in the DOM
+  if (document.getElementById("cpo-total-complete")) {
+    updateCPOStats();
+  }
 }
 
 async function saveBrandanComment(sheetKey, row, btn) {
@@ -1324,16 +1343,20 @@ function buildNav() {
   const tabs  = [];
 
   if (view === "director") {
-    tabs.push({ id:"my-items",  label:`${currentRole.region} — My Items` });
-    tabs.push({ id:"summary",   label:"My Progress" });
+    tabs.push({ id:"my-items",      label:`${currentRole.region} — My Items` });
+    tabs.push({ id:"summary",       label:"My Progress" });
   } else if (view === "lead") {
-    tabs.push({ id:"my-items",  label:"San Diego — My Items" });
-    tabs.push({ id:"all-regions",label:"All Regions Overview" });
-    tabs.push({ id:"summary",   label:"My Progress" });
+    tabs.push({ id:"my-items",      label:"San Diego — My Items" });
+    tabs.push({ id:"all-regions",   label:"All Regions Overview" });
+    tabs.push({ id:"summary",       label:"My Progress" });
   } else if (view === "ops") {
-    tabs.push({ id:"flagged",   label:"Flagged Items" });
-    tabs.push({ id:"all-regions",label:"All Regions Overview" });
-    tabs.push({ id:"risk-log",  label:"Risk Log" });
+    tabs.push({ id:"flagged",       label:"Flagged Items" });
+    tabs.push({ id:"all-regions",   label:"All Regions Overview" });
+    tabs.push({ id:"risk-log",      label:"Risk Log" });
+  } else if (view === "cpo") {
+    tabs.push({ id:"cpo-dashboard", label:"Executive Dashboard" });
+    tabs.push({ id:"all-regions",   label:"Regional Overview" });
+    tabs.push({ id:"risk-log",      label:"Risk Log" });
   }
 
   nav.innerHTML = tabs.map((t, i) => `
@@ -1350,12 +1373,23 @@ function switchTab(tabId) {
   document.getElementById(`tab-${tabId}`)?.classList.add("active");
   document.getElementById(`page-${tabId}`)?.classList.add("active");
 
-  // Refresh stats when switching to all-regions or progress tabs
-  if (tabId === "all-regions" || tabId === "progress") {
+  // Refresh data when switching tabs
+  if (tabId === "all-regions" || tabId === "summary") {
     setTimeout(updateAllRegionStats, 50);
   }
   if (tabId === "flagged") {
     setTimeout(renderFlaggedItems, 50);
+  }
+  if (tabId === "risk-log") {
+    const riskEl = document.getElementById("risk-log-content");
+    if (riskEl) {
+      const loader = document.getElementById("risk-log-loading");
+      if (loader) loader.style.display = "none";
+      setTimeout(() => updateRiskLog(riskEl), 50);
+    }
+  }
+  if (tabId === "cpo-dashboard") {
+    setTimeout(updateCPOStats, 50);
   }
 }
 
@@ -1364,25 +1398,25 @@ function buildPages() {
   const view      = currentRole.view;
   let html        = "";
 
-  // My Items page
-  if (view !== "ops") {
-    const sheetKey = currentRole.sheet === "brandan" ? "sd" : currentRole.sheet;
-    html += buildMyItemsPage(sheetKey);
-  }
-
-  // All Regions overview (Miriam lead + Brandan)
-  if (view === "lead" || view === "ops") {
-    html += buildAllRegionsPage();
-  }
-
-  // Summary / Progress page
-  if (view !== "ops") {
-    html += buildSummaryPage();
-  }
-
-  // Flagged items (Brandan ops view)
   if (view === "ops") {
+    // Ops view: Flagged first (matches first nav tab), then All Regions, then Risk Log
     html += buildFlaggedPage();
+    html += buildAllRegionsPage();
+    html += buildRiskLogPage();
+  } else if (view === "cpo") {
+    // CPO view: Executive dashboard, Regional overview, Risk Log
+    html += buildCPOPage();
+    html += buildAllRegionsPage();
+    html += buildRiskLogPage();
+  } else if (view === "lead") {
+    // Lead view: My Items, All Regions, Progress
+    html += buildMyItemsPage(currentRole.sheet);
+    html += buildAllRegionsPage();
+    html += buildSummaryPage();
+  } else {
+    // Director view: My Items, Progress
+    html += buildMyItemsPage(currentRole.sheet);
+    html += buildSummaryPage();
   }
 
   container.innerHTML = html;
@@ -1390,6 +1424,14 @@ function buildPages() {
   // Activate first page
   const firstPage = container.querySelector(".page");
   if (firstPage) firstPage.classList.add("active");
+
+  // Initialize month filter — apply current dropdown value now that DOM is ready
+  setTimeout(() => {
+    ["sd","ie","norcal"].forEach(key => {
+      const sel = document.getElementById(`month-dropdown-${key}`);
+      if (sel) filterMonth(sel.value, key);
+    });
+  }, 0);
 }
 
 // ── MY ITEMS PAGE ─────────────────────────────────────────────────────────────
@@ -1467,9 +1509,6 @@ function buildMyItemsPage(sheetKey) {
       ${monthBlocks}
     </div>
   `;
-  // Schedule: hide all months except the default after DOM renders
-  setTimeout(() => filterMonth(defaultMonth, sheetKey), 0);
-  return html;
 }
 
 function buildItemCard(sheetKey, item) {
@@ -1620,18 +1659,325 @@ function buildFlaggedPage() {
 
 // ── RISK LOG PAGE ─────────────────────────────────────────────────────────────
 function buildRiskLogPage() {
-  // Placeholder — reads from Risk and Issue Log sheet
+  // Dynamically built from flagged/at-risk items across all regions
   return `
     <div class="page" id="page-risk-log">
       <div class="page-header">
         <div class="page-title">Risk and Issue Log</div>
-        <div class="page-subtitle">Proactive risks tracked by Brandan. Updated monthly. Feeds the CPO Dashboard quarterly narrative.</div>
+        <div class="page-subtitle">All items currently At Risk or Off Track, grouped by region. Corrective actions tracked here feed the quarterly narrative.</div>
       </div>
-      <div class="loading-state">
-        <div class="spinner"></div> Loading risk log...
+      <div id="risk-log-content">
+        <div class="loading-state" id="risk-log-loading">
+          <div class="spinner"></div> Loading risk log...
+        </div>
       </div>
     </div>
   `;
+}
+
+// ── CPO EXECUTIVE DASHBOARD ───────────────────────────────────────────────────
+function buildCPOPage() {
+  const total = ["sd","ie","norcal"].reduce((s,k) => s + (TRACKER_ROWS[k]||[]).length, 0);
+  const quarters = ["Q1","Q2"];
+  const qLabels  = { Q1:"July – September 2026", Q2:"October – December 2026" };
+
+  return `
+    <div class="page" id="page-cpo-dashboard">
+      <div class="page-header">
+        <div class="page-title">CE Enhancement — Executive Dashboard</div>
+        <div class="page-subtitle">Program-wide view for the Chief Program Officer · FY 2026–27 · Updates as Directors save their items.</div>
+      </div>
+
+      <!-- ── OVERALL HEALTH ── -->
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">Program Health — All Regions</div>
+      <div class="summary-grid" style="margin-bottom:32px">
+        <div class="summary-card total">
+          <div class="summary-number">${total}</div>
+          <div class="summary-label">Total deliverables (all regions)</div>
+        </div>
+        <div class="summary-card complete">
+          <div class="summary-number" id="cpo-total-complete">—</div>
+          <div class="summary-label">Complete</div>
+        </div>
+        <div class="summary-card at-risk">
+          <div class="summary-number" id="cpo-total-atrisk">—</div>
+          <div class="summary-label">At Risk</div>
+        </div>
+        <div class="summary-card off-track">
+          <div class="summary-number" id="cpo-total-offtrack">—</div>
+          <div class="summary-label">Off Track</div>
+        </div>
+      </div>
+
+      <!-- ── REGIONAL BREAKDOWN ── -->
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">Regional Status</div>
+      <div class="region-grid" style="margin-bottom:32px">
+        ${["sd","ie","norcal"].map(key => {
+          const names  = {sd:"San Diego", ie:"Inland Empire", norcal:"NorCal"};
+          const colors = {sd:"sd", ie:"ie", norcal:"nc"};
+          const tot    = (TRACKER_ROWS[key]||[]).length;
+          return `
+            <div class="region-card">
+              <div class="region-card-header ${colors[key]}">${names[key]}</div>
+              <div class="region-card-body">
+                <div class="region-stat">
+                  <span class="region-stat-label">Total items</span>
+                  <span class="region-stat-val">${tot}</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">Complete</span>
+                  <span class="region-stat-val green" id="cpo-stat-complete-${key}">—</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">In Progress</span>
+                  <span class="region-stat-val" id="cpo-stat-inprog-${key}">—</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">At Risk</span>
+                  <span class="region-stat-val orange" id="cpo-stat-atrisk-${key}">—</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">Off Track</span>
+                  <span class="region-stat-val red" id="cpo-stat-offtrack-${key}">—</span>
+                </div>
+                <div class="region-stat" style="margin-top:8px;display:block;border-bottom:none">
+                  <div style="background:var(--gray-200);border-radius:4px;height:6px;overflow:hidden;margin-top:6px">
+                    <div id="cpo-prog-${key}" style="height:100%;background:var(--green);width:0%;transition:width .4s;border-radius:4px"></div>
+                  </div>
+                  <div style="font-size:11px;color:var(--gray-400);margin-top:4px" id="cpo-prog-text-${key}">Loading...</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <!-- ── QUARTERLY PROGRESS ── -->
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">Quarterly Progress</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:32px">
+        ${quarters.map(q => {
+          const qTotal = ["sd","ie","norcal"].reduce((s,k) => s + (TRACKER_ROWS[k]||[]).filter(i=>i.quarter===q).length, 0);
+          return `
+            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden">
+              <div style="background:var(--navy);color:var(--white);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:14px;font-weight:700">${q}</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.6)">${qLabels[q]}</div>
+                </div>
+                <span class="quarter-badge ${q.toLowerCase()}">${qTotal} items</span>
+              </div>
+              <div style="padding:16px">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin-bottom:14px">
+                  <div style="padding:10px 4px;background:var(--lt-green);border-radius:var(--radius)">
+                    <div style="font-size:22px;font-weight:800;color:var(--green)" id="cpo-${q}-complete">—</div>
+                    <div style="font-size:10px;color:var(--gray-600);margin-top:2px">Complete</div>
+                  </div>
+                  <div style="padding:10px 4px;background:var(--pale-blue);border-radius:var(--radius)">
+                    <div style="font-size:22px;font-weight:800;color:var(--mid-blue)" id="cpo-${q}-inprog">—</div>
+                    <div style="font-size:10px;color:var(--gray-600);margin-top:2px">In Progress</div>
+                  </div>
+                  <div style="padding:10px 4px;background:var(--lt-orange);border-radius:var(--radius)">
+                    <div style="font-size:22px;font-weight:800;color:var(--orange)" id="cpo-${q}-atrisk">—</div>
+                    <div style="font-size:10px;color:var(--gray-600);margin-top:2px">At Risk</div>
+                  </div>
+                  <div style="padding:10px 4px;background:var(--lt-red);border-radius:var(--radius)">
+                    <div style="font-size:22px;font-weight:800;color:var(--red)" id="cpo-${q}-offtrack">—</div>
+                    <div style="font-size:10px;color:var(--gray-600);margin-top:2px">Off Track</div>
+                  </div>
+                </div>
+                <div style="background:var(--gray-200);border-radius:4px;height:8px;overflow:hidden">
+                  <div id="cpo-${q}-bar" style="height:100%;background:var(--green);width:0%;transition:width .4s;border-radius:4px"></div>
+                </div>
+                <div style="text-align:right;font-size:11px;color:var(--gray-400);margin-top:4px" id="cpo-${q}-text">Loading...</div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <!-- ── ITEMS NEEDING ATTENTION ── -->
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">Items Needing Attention</div>
+      <div id="cpo-attention">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+  `;
+}
+
+// Update all CPO dashboard elements from module-level statuses
+function updateCPOStats() {
+  let totalComp=0, totalAR=0, totalOT=0, totalIP=0;
+
+  ["sd","ie","norcal"].forEach(key => {
+    const items = TRACKER_ROWS[key] || [];
+    let comp=0, ar=0, ot=0, ip=0;
+    items.forEach(item => {
+      const st = statuses[`${key}-${item.row}`] || "Not Started";
+      if (st === "Complete")    { comp++; totalComp++; }
+      if (st === "At Risk")     { ar++;   totalAR++;   }
+      if (st === "Off Track")   { ot++;   totalOT++;   }
+      if (st === "In Progress") { ip++;   totalIP++;   }
+    });
+    const u = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    u(`cpo-stat-complete-${key}`,  comp);
+    u(`cpo-stat-inprog-${key}`,    ip);
+    u(`cpo-stat-atrisk-${key}`,    ar);
+    u(`cpo-stat-offtrack-${key}`,  ot);
+
+    // Regional progress bar
+    const pct = items.length ? (comp / items.length * 100) : 0;
+    const bar = document.getElementById(`cpo-prog-${key}`);
+    const txt = document.getElementById(`cpo-prog-text-${key}`);
+    if (bar) bar.style.width = pct + "%";
+    if (txt) txt.textContent = `${comp} of ${items.length} complete (${Math.round(pct)}%)`;
+  });
+
+  // Overall totals
+  const u2 = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  u2("cpo-total-complete",  totalComp);
+  u2("cpo-total-atrisk",    totalAR);
+  u2("cpo-total-offtrack",  totalOT);
+
+  // Quarterly stats
+  ["Q1","Q2"].forEach(q => {
+    let qComp=0, qAR=0, qOT=0, qIP=0, qTotal=0;
+    ["sd","ie","norcal"].forEach(key => {
+      (TRACKER_ROWS[key]||[]).filter(i => i.quarter===q).forEach(item => {
+        qTotal++;
+        const st = statuses[`${key}-${item.row}`] || "Not Started";
+        if (st === "Complete")    qComp++;
+        if (st === "At Risk")     qAR++;
+        if (st === "Off Track")   qOT++;
+        if (st === "In Progress") qIP++;
+      });
+    });
+    u2(`cpo-${q}-complete`,  qComp);
+    u2(`cpo-${q}-inprog`,    qIP);
+    u2(`cpo-${q}-atrisk`,    qAR);
+    u2(`cpo-${q}-offtrack`,  qOT);
+    const pct = qTotal ? (qComp / qTotal * 100) : 0;
+    const bar = document.getElementById(`cpo-${q}-bar`);
+    const txt = document.getElementById(`cpo-${q}-text`);
+    if (bar) bar.style.width = pct + "%";
+    if (txt) txt.textContent = `${qComp} of ${qTotal} complete · ${Math.round(pct)}%`;
+  });
+
+  // Items needing attention
+  const attEl = document.getElementById("cpo-attention");
+  if (attEl) {
+    const flagged = [];
+    ["sd","ie","norcal"].forEach(key => {
+      const region = {sd:"San Diego", ie:"Inland Empire", norcal:"NorCal"}[key];
+      (TRACKER_ROWS[key]||[]).forEach(item => {
+        const st = statuses[`${key}-${item.row}`];
+        if (st === "At Risk" || st === "Off Track") {
+          flagged.push({ region, month:item.month, deliverable:item.deliverable,
+                         status:st, note:notes[`${key}-${item.row}`]||"" });
+        }
+      });
+    });
+
+    if (flagged.length === 0) {
+      attEl.innerHTML = `
+        <div style="background:var(--lt-green);border-left:4px solid var(--green);
+                    padding:16px 20px;border-radius:var(--radius);color:var(--green);
+                    font-weight:600;font-size:14px">
+          ✓ No items currently flagged across all regions. Program is on track.
+        </div>`;
+    } else {
+      attEl.innerHTML = `
+        <table class="ops-table">
+          <thead>
+            <tr>
+              <th>Region</th><th>Month</th><th>Deliverable</th>
+              <th>Status</th><th>Director Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${flagged.map(f => `
+              <tr class="${f.status==="Off Track"?"off-track":"at-risk"}">
+                <td><strong>${f.region}</strong></td>
+                <td>${f.month}</td>
+                <td>${escHtml(f.deliverable)}</td>
+                <td><span class="status-pill ${f.status==="Off Track"?"pill-off-track":"pill-at-risk"}">${f.status}</span></td>
+                <td style="font-size:12px;color:var(--gray-600)">${escHtml(f.note)||'—'}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>`;
+    }
+  }
+
+  // Also refresh the risk log if it's in the DOM
+  const riskEl = document.getElementById("risk-log-content");
+  if (riskEl) {
+    const loader = document.getElementById("risk-log-loading");
+    if (loader) loader.style.display = "none";
+    updateRiskLog(riskEl);
+  }
+}
+
+// Render the Risk Log page content grouped by region
+function updateRiskLog(container) {
+  const flagged = [];
+  ["sd","ie","norcal"].forEach(key => {
+    const region = {sd:"San Diego", ie:"Inland Empire", norcal:"NorCal"}[key];
+    const color  = {sd:"sd", ie:"ie", norcal:"nc"}[key];
+    (TRACKER_ROWS[key]||[]).forEach(item => {
+      const st = statuses[`${key}-${item.row}`];
+      if (st === "At Risk" || st === "Off Track") {
+        flagged.push({ key, region, color, month:item.month, quarter:item.quarter,
+                       section:item.section, deliverable:item.deliverable,
+                       status:st, note:notes[`${key}-${item.row}`]||"",
+                       comment:brandanComments[`${key}-${item.row}`]||"" });
+      }
+    });
+  });
+
+  if (flagged.length === 0) {
+    container.innerHTML = `
+      <div style="background:var(--lt-green);border-left:4px solid var(--green);
+                  padding:16px 20px;border-radius:var(--radius);color:var(--green);
+                  font-weight:600;margin-top:16px">
+        ✓ No active risks or issues. All regions are on track.
+      </div>`;
+    return;
+  }
+
+  // Group by region
+  const byRegion = {};
+  flagged.forEach(f => {
+    if (!byRegion[f.region]) byRegion[f.region] = { color:f.color, items:[] };
+    byRegion[f.region].items.push(f);
+  });
+
+  container.innerHTML = Object.entries(byRegion).map(([region, {color, items}]) => `
+    <div style="margin-bottom:24px">
+      <div class="region-card-header ${color}" style="border-radius:var(--radius) var(--radius) 0 0;padding:10px 16px">
+        ${region} — ${items.length} item${items.length!==1?"s":""} flagged
+      </div>
+      <table class="ops-table" style="border-radius:0 0 var(--radius) var(--radius)">
+        <thead>
+          <tr>
+            <th>Month</th><th>Section</th><th>Deliverable</th>
+            <th>Status</th><th>Director Notes</th><th>Ops Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(f => `
+            <tr class="${f.status==="Off Track"?"off-track":"at-risk"}">
+              <td><strong>${f.month}</strong><br><span class="quarter-badge ${f.quarter.toLowerCase()}" style="margin-top:4px">${f.quarter}</span></td>
+              <td style="font-size:12px;color:var(--gray-600)">${escHtml(f.section)}</td>
+              <td>${escHtml(f.deliverable)}</td>
+              <td><span class="status-pill ${f.status==="Off Track"?"pill-off-track":"pill-at-risk"}">${f.status}</span></td>
+              <td style="font-size:12px">${escHtml(f.note)||'—'}</td>
+              <td style="font-size:12px;color:var(--orange)">${escHtml(f.comment)||'—'}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `).join("");
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
