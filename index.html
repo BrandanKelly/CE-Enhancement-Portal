@@ -46,7 +46,7 @@ const MsAuth = {
     const params = new URLSearchParams({
       client_id: this.clientId,
       response_type: 'code',
-      redirect_uri: window.location.origin + window.location.pathname,
+      redirect_uri: CONFIG.redirectUri,
       scope: this.scopes.join(' ') + ' offline_access openid profile email',
       state: state,
       code_challenge: pkce.challenge,
@@ -79,7 +79,7 @@ const MsAuth = {
           client_id: this.clientId,
           grant_type: 'authorization_code',
           code: code,
-          redirect_uri: window.location.origin + window.location.pathname,
+          redirect_uri: CONFIG.redirectUri,
           code_verifier: verifier,
           scope: this.scopes.join(' ') + ' offline_access openid profile email',
         })
@@ -117,9 +117,11 @@ const MsAuth = {
   },
 
   async acquireTokenSilent() {
-    // Try stored token first
+    // Try stored token first — only accept real JWTs (3 dot-separated segments)
     const stored = sessionStorage.getItem('access_token');
-    if (stored) { this._token = stored; return stored; }
+    if (stored && stored.split('.').length === 3) { this._token = stored; return stored; }
+    // Bad/non-JWT value sitting in storage — discard it so we fall through to refresh
+    if (stored) sessionStorage.removeItem('access_token');
 
     // Try refresh token
     const refresh = sessionStorage.getItem('refresh_token');
@@ -157,7 +159,7 @@ const MsAuth = {
   logout() {
     sessionStorage.clear();
     this._token = null; this._account = null;
-    window.location.href = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}`;
+    window.location.href = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`;
   }
 };
 </script>
@@ -771,6 +773,10 @@ const CONFIG = {
   // Azure AD App Registration
   clientId:     "efb126fb-adf3-4629-8c0e-a97f68e2d0d5",
   tenantId:     "3acd1361-5a23-4e0f-b84e-d626bdb3125e",
+  // Hardcoded redirect URI — must match exactly what is registered in Azure AD.
+  // Never use window.location.origin here: the page may load from a Teams/Outlook
+  // preview pane or other wrapper that gives it a non-HTTPS scheme (AADSTS500111).
+  redirectUri:  "https://brandankelly.github.io/CE-Enhancement-Portal/",
 
   // SharePoint / Excel file location
   siteId:       "ofall.sharepoint.com,6254cda9-af2a-42ae-8ca5-08636e2f250c,44b05cd7-c4ce-4e4a-ba7d-c157def86a04",
@@ -935,8 +941,9 @@ async function signOut() {
 }
 
 async function getToken() {
-  // Use module-level accessToken first (most reliable)
-  if (accessToken) return accessToken;
+  // Use module-level accessToken first — only if it's a real JWT
+  if (accessToken && accessToken.split('.').length === 3) return accessToken;
+  if (accessToken) accessToken = null; // discard the bad cached value
   
   // Fall back to sessionStorage
   const stored = sessionStorage.getItem('access_token');
@@ -965,7 +972,8 @@ const GRAPH_BASE = `https://graph.microsoft.com/v1.0/drives/${CONFIG.driveId}/it
 
 async function readRange(sheet, range) {
   const token = await getToken();
-  const url   = `${GRAPH_BASE}/worksheets('${encodeURIComponent(sheet)}')/range(address='${range}')`;
+  const escapedSheet = sheet.replace(/'/g, "''"); // OData: escape single quotes by doubling
+  const url   = `${GRAPH_BASE}/worksheets('${escapedSheet}')/range(address='${range}')`;
   const resp  = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!resp.ok) throw new Error(await resp.text());
   return (await resp.json()).values;
@@ -973,7 +981,8 @@ async function readRange(sheet, range) {
 
 async function writeCell(sheet, cellAddress, value) {
   const token = await getToken();
-  const url   = `${GRAPH_BASE}/worksheets('${encodeURIComponent(sheet)}')/range(address='${cellAddress}')`;
+  const escapedSheet = sheet.replace(/'/g, "''"); // OData: escape single quotes by doubling
+  const url   = `${GRAPH_BASE}/worksheets('${escapedSheet}')/range(address='${cellAddress}')`;
   const resp  = await fetch(url, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -1926,6 +1935,8 @@ function loadPendingAlerts() {
     if (account) {
       try {
         const token = await MsAuth.acquireTokenSilent();
+        // Only proceed if we got a real JWT — otherwise fall through to login screen
+        if (!token || token.split('.').length !== 3) throw new Error('Invalid cached token');
         await handleLogin({ account, accessToken: token });
       } catch (e) {
         console.log("Session expired:", e);
