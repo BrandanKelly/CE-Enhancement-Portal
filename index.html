@@ -775,6 +775,1897 @@ const CONFIG = {
   // SharePoint / Excel file location
   siteId:       "ofall.sharepoint.com,6254cda9-af2a-42ae-8ca5-08636e2f250c,44b05cd7-c4ce-4e4a-ba7d-c157def86a04",
   driveId:      "b!qc1UYiqvrkKMpQhjbi8lDNdcsETOxEpOun3BV974agT6nItavONnTryDEoSU1JPP",
+  fileId:       "01CNZQWXVMH2DUVXN7GBBZ2B5WJK47WEUE",
+
+  // Excel sheet names (must match exactly)
+  sheets: {
+    sd:      "Miriam — SD Director",
+    ie:      "Serena — IE Director",
+    norcal:  "Franchesca — NorCal Director",
+    brandan: "Brandan — Operations",
+  },
+
+  // Role mapping — email → role config
+  // Update with actual OFA email addresses
+  roles: {
+    // UPDATE THESE WITH ACTUAL OFA EMAIL ADDRESSES BEFORE SHARING
+    "miriam@optionsforall.org":     { name: "Miriam Burke",  role: "SD Regional Director / Project Lead", view: "lead",     region: "San Diego",     sheet: "sd",     color: "#1F3864" },
+    "serena@optionsforall.org":     { name: "Serena",        role: "Inland Empire Regional Director",     view: "director", region: "Inland Empire", sheet: "ie",     color: "#1F7A6E" },
+    "franchesca@optionsforall.org": { name: "Franchesca",    role: "NorCal Regional Director",            view: "director", region: "NorCal",        sheet: "norcal", color: "#7F6000" },
+    "bkelly@optionsforall.org":     { name: "Brandan Kelly", role: "Director of Operations",              view: "ops",      region: "All Regions",   sheet: "brandan", color: "#7030A0", initial: "B" },
+    "myles@optionsforall.org":      { name: "Myles",          role: "Chief Program Officer",                view: "ops",      region: "All Regions",   sheet: "brandan", color: "#1F3864", initial: "MY", readonly: true },
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TRACKER DATA — Row map from the Excel workbook
+// Each item: { row, month, quarter, section, deliverable, instructions, submit }
+// Status is in column G (index 6), Notes in H (7), Brandan comment in I (8)
+// ══════════════════════════════════════════════════════════════════════════════
+const TRACKER_ROWS = {
+  sd: [
+    // July 2026 — Q1
+    {row:9,  month:"July 2026",      quarter:"Q1", section:"Program Framework & Standards", deliverable:"Project Charter — Review & Confirm", instructions:"Read the approved project charter and CE Enhancement Framework. Confirm in writing (email to Miriam) that Miriam understands the scope, role, and San Diego's commitments.", submit:"Email to Miriam confirming Miriam has reviewed the charter and framework."},
+    {row:10, month:"July 2026",      quarter:"Q1", section:"Program Framework & Standards", deliverable:"Standard Definitions — Participate in Working Session", instructions:"Attend the July working session where the team aligns on definitions: what counts as a structured vocational activity, a meaningful volunteer placement, and CE minimum required components.", submit:"Miriam's input at the working session. Signed-off definitions document."},
+    {row:11, month:"July 2026",      quarter:"Q1", section:"Governance", deliverable:"Accept Calendar Invitations", instructions:"Accept all recurring meeting invitations: monthly working sessions, quarterly executive reviews, and regional implementation reviews. Flag any conflicts to Miriam now.", submit:"Calendar invitations accepted. Any conflicts flagged to Miriam."},
+    {row:12, month:"July 2026",      quarter:"Q1", section:"Governance", deliverable:"Orient Your Team", instructions:"Brief managers on the CE Enhancement Project — what it is, why it matters, and what will be expected. A 15-minute team meeting is sufficient for July.", submit:"Notes from team briefing or email confirmation the briefing occurred."},
+    // August 2026 — Q1
+    {row:17, month:"August 2026",    quarter:"Q1", section:"Current-State Program Assessment", deliverable:"Complete Regional Current-State Assessment", instructions:"Using the assessment template, inventory San Diego's current CE programs: vocational/independence activities, volunteer placements, community partners, schedules, staff competencies, training gaps, and documentation practices.", submit:"Completed regional current-state assessment template submitted to Miriam by August 29."},
+    {row:18, month:"August 2026",    quarter:"Q1", section:"Current-State Program Assessment", deliverable:"Complete the Activity and Partnership Inventory", instructions:"List every current vocational or independence activity and every volunteer or community partner in San Diego. Use a simple table: activity/partner name, type, frequency, estimated # of clients.", submit:"Spreadsheet or table submitted with current-state assessment. One row per activity or partner."},
+    {row:19, month:"August 2026",    quarter:"Q1", section:"Transportation Baseline", deliverable:"Complete Regional Transportation Baseline", instructions:"Document: number of OFA drivers in San Diego, number of routes, number of individual client pickups per day, total daily mileage, total driver hours per week, and number of incidents in the last 12 months.", submit:"Completed data table submitted to Miriam by August 29."},
+    {row:20, month:"August 2026",    quarter:"Q1", section:"Transportation Baseline", deliverable:"Complete the Client Mobility Inventory", instructions:"For each CE client in San Diego, document: current transportation method, whether they are a travel training candidate (Yes/No/Unknown), and any known barriers.", submit:"Spreadsheet with one row per CE client: client ID, current transport type, travel training candidate, barriers."},
+    {row:21, month:"August 2026",    quarter:"Q1", section:"Transportation Baseline", deliverable:"Identify Hub Candidate Locations and Complete Feasibility Review", instructions:"Identify 2–3 potential meeting hub locations in San Diego. For each, evaluate: ADA accessibility, indoor waiting area, bus/transit proximity, parking, safety, and geographic reach.", submit:"Completed hub evaluation checklist for 2–3 locations. Regional recommendation included. Submitted to Miriam by August 29."},
+    {row:22, month:"August 2026",    quarter:"Q1", section:"Client Assessment and ISP", deliverable:"Pilot the Revised ISP Prompts", instructions:"Miriam will provide draft ISP prompts. Run at least one pilot ISP review in San Diego using the draft prompts. Provide written feedback to Miriam on usability.", submit:"Written feedback on the draft ISP prompts (email to Miriam). Notes from the pilot ISP session."},
+    {row:23, month:"August 2026",    quarter:"Q1", section:"Benefits Continuity", deliverable:"Compile Regional Resource Directory", instructions:"List the key benefits-related contacts in San Diego: regional center liaison, county DDS contact, any benefits counselors OFA has a relationship with, and local HICAP or equivalent. Verify contacts are current.", submit:"List of verified contacts for San Diego submitted to Brandan by August 22."},
+    {row:24, month:"August 2026",    quarter:"Q1", section:"Client Milestone Framework", deliverable:"Review and Test the Draft Milestone Tool", instructions:"Miriam will provide a draft milestone tool with domains and rating categories. Test with 2–3 managers. Provide written feedback: usability, language alignment with ISP goals, time to complete.", submit:"Written feedback from at least 2 managers (email to Miriam). Note any language or usability concerns."},
+    // September 2026 — Q1
+    {row:29, month:"September 2026", quarter:"Q1", section:"Current-State Assessment", deliverable:"Review and Confirm Gap Analysis", instructions:"Brandan will compile a gap analysis. Review it for accuracy. Correct any factual errors. Confirm the gaps are real and that you understand what San Diego needs to address in Q2.", submit:"Email to Miriam confirming the gap analysis for San Diego is accurate, or noting corrections needed."},
+    {row:30, month:"September 2026", quarter:"Q1", section:"Governance", deliverable:"Submit Regional Context Narrative", instructions:"Write a one-page description of San Diego's specific context: geography, transit availability, client population characteristics, and any regional factors that affect how the CE Enhancement framework will be implemented.", submit:"One-page narrative submitted to Miriam by September 5."},
+    {row:31, month:"September 2026", quarter:"Q1", section:"Client Assessment and ISP", deliverable:"Build Initial Pilot-Client Inventory", instructions:"Review the current CE caseload with managers. Identify clients who are candidates for the Q2 pilot based on expressed interest in volunteering, employment, or greater independence.", submit:"De-identified list: client ID, interest area, current program, notes. Minimum 10–15 candidates. Submitted to Miriam by September 19."},
+    {row:32, month:"September 2026", quarter:"Q1", section:"Transportation Baseline", deliverable:"Confirm Q2 Hub Pilot Location", instructions:"Based on the August hub feasibility analysis, confirm with Miriam which hub locations San Diego will pilot in Q2. Notify Operations and Risk of the selected location(s).", submit:"Written confirmation of selected Q2 hub pilot location(s) (email to Miriam). Operations and Risk notified."},
+    {row:33, month:"September 2026", quarter:"Q1", section:"Governance", deliverable:"Confirm Q2 Launch Readiness", instructions:"Complete the Q2 readiness checklist Brandan provides. Confirm: pilot sites selected, pilot clients identified, staff assignments made, hub location confirmed, and ready to begin training in October.", submit:"Completed Q2 readiness checklist submitted to Miriam by September 26."},
+    // October 2026 — Q2
+    {row:38, month:"October 2026",   quarter:"Q2", section:"Staff Training", deliverable:"Complete Director and Manager Training", instructions:"Attend the Director and manager training session Miriam leads. This covers: project vision, CE service framework, milestone use, ISP prompts, benefits support, transportation planning, volunteer-site standards, and documentation.", submit:"Attendance confirmed. Sign-in sheet or attendance log submitted to Brandan."},
+    {row:39, month:"October 2026",   quarter:"Q2", section:"Staff Training", deliverable:"Train Pilot Staff", instructions:"Lead or coordinate training for frontline staff who will implement the pilot. Use the training materials Miriam provides. Confirm that every staff member working with pilot clients has been trained before they begin.", submit:"Training completion log: staff name, date, session type. Submitted to Brandan by October 25."},
+    {row:40, month:"October 2026",   quarter:"Q2", section:"Staff Training", deliverable:"Distribute Communication Plan to Families and Service Coordinators", instructions:"Before launching the pilot with clients, communicate the changes to families, guardians, and service coordinators for pilot clients. Do not make client-facing changes before families are informed.", submit:"Documentation that family/guardian and SC communication went out before pilot launch."},
+    {row:41, month:"October 2026",   quarter:"Q2", section:"Pilot Implementation", deliverable:"Finalize and Submit Regional Pilot Plan", instructions:"Submit completed pilot plan to Miriam: named pilot site(s), named client group (with client inventory), activities planned, staff lead for data collection, and pilot start date.", submit:"One-page pilot plan submitted to Miriam by October 3."},
+    {row:42, month:"October 2026",   quarter:"Q2", section:"Pilot Implementation", deliverable:"Establish Milestone Baselines for Pilot Clients", instructions:"Before implementing the enhanced framework with pilot clients, have managers complete the milestone tool for each pilot client. This is the 'before' snapshot — must be done before the pilot starts.", submit:"Completed milestone tool for each pilot client. Stored in the location Brandan confirms. All completed before pilot start date."},
+    {row:43, month:"October 2026",   quarter:"Q2", section:"Pilot Implementation", deliverable:"Launch Pilot Programming", instructions:"Begin implementing the enhanced CE framework with pilot clients and sites. Structured activities, volunteer outreach, revised ISP prompts, and hub transportation all begin this month.", submit:"First month of Mini-Tracker tab completed confirming pilot has launched."},
+    {row:44, month:"October 2026",   quarter:"Q2", section:"Transportation Pilot", deliverable:"Set Up Hub and Launch Transportation Pilot", instructions:"Implement hub operating procedures at the selected pilot location. Begin transitioning pilot clients from door-to-door OFA pickup to hub-based transportation where appropriate.", submit:"Hub operating procedures in place. Client transition plans complete. Hub open and operational by October 31."},
+    {row:45, month:"October 2026",   quarter:"Q2", section:"Internal Service Pathways", deliverable:"Review and Confirm Internal Pathway Map", instructions:"Miriam will distribute an internal pathway map showing how CE clients move to other OFA programs. Review it and confirm it reflects how the referral process will work in San Diego.", submit:"Email to Miriam confirming the pathway map is accurate for San Diego, or flagging needed corrections."},
+    // November 2026 — Q2
+    {row:50, month:"November 2026",  quarter:"Q2", section:"Structured Programming", deliverable:"Confirm Recurring Structured Activities are Running", instructions:"Check that at least one structured vocational or independence-building activity is occurring per week per client group at each pilot site. Review site calendars and manager notes.", submit:"Updated activity calendars for all pilot sites submitted to Miriam. Confirmation minimum structured activity frequency is being met."},
+    {row:51, month:"November 2026",  quarter:"Q2", section:"Volunteer Partnerships", deliverable:"Establish Volunteer Placements", instructions:"Work with managers to contact prioritized volunteer partner organizations. Conduct site visits or phone evaluations using the partner standards checklist. Establish at least 2 active placements by end of November.", submit:"Placement tracker updated with at least 1–2 active placements. Partner evaluation checklist completed for each new partner."},
+    {row:52, month:"November 2026",  quarter:"Q2", section:"Benefits Continuity", deliverable:"Confirm ISP Benefits Prompts Are Being Used", instructions:"Spot-check ISP documentation from the first month of pilot. Confirm that benefits-continuity prompts are being used and any concerns identified are being logged in the benefits follow-up tracker.", submit:"Evidence that prompts are in use: sample ISP notes or manager confirmation. Benefits follow-up tracker showing at least one entry."},
+    {row:53, month:"November 2026",  quarter:"Q2", section:"Benefits Continuity", deliverable:"Log All Open Benefits Concerns", instructions:"Ensure all benefits concerns identified during October and November ISP reviews are entered in the benefits follow-up tracker. Each entry must have: client ID, concern type, who is following up, and follow-up date.", submit:"Benefits follow-up tracker updated. All open items have an assigned staff member and follow-up date."},
+    {row:54, month:"November 2026",  quarter:"Q2", section:"Transportation Pilot", deliverable:"Begin Travel Training for Eligible Clients", instructions:"For clients identified as travel training candidates, develop a route-specific training plan with managers. Begin training for at least one client this month if a candidate is ready.", submit:"Travel training plan for each candidate. Training log showing at least one training session per candidate who has started."},
+    {row:55, month:"November 2026",  quarter:"Q2", section:"Internal Service Pathways", deliverable:"Begin Cross-Program Client Reviews", instructions:"Begin identifying CE clients who may be appropriate for referral to another OFA program. Use the ISP review process and the pathway review template. Document every referral using the referral form.", submit:"At least one documented referral submitted using the referral form. Receiving program notified. Follow-up date set."},
+    {row:56, month:"November 2026",  quarter:"Q2", section:"Monthly Mini-Tracker", deliverable:"Complete Monthly Mini-Tracker by November 5", instructions:"Fill in all gold cells in the Mini-Tracker tab in the Excel workbook: workstream status, % complete, barriers, next steps, owner, and all narrative sections.", submit:"Mini-Tracker tab fully completed. Submitted to Miriam by November 5."},
+    // December 2026 — Q2
+    {row:61, month:"December 2026",  quarter:"Q2", section:"Pilot Review", deliverable:"Participate in Early Pilot Review", instructions:"Come prepared with: what is working in the pilot, what is not, specific barriers encountered, and any tool or process problems that need to be fixed before Q3 expansion.", submit:"Written pilot summary (1 page) submitted to Miriam by December 12. Attendance at December working session."},
+    {row:62, month:"December 2026",  quarter:"Q2", section:"Transportation", deliverable:"Submit First Transportation Comparison Data", instructions:"Provide the first month of hub operation data using the same fields as the Q1 baseline: drivers used, routes, mileage, driver hours, incidents.", submit:"November and early December transportation data submitted to Brandan by December 12."},
+    {row:63, month:"December 2026",  quarter:"Q2", section:"Volunteer Partnerships", deliverable:"Confirm Active Volunteer Partnerships", instructions:"By December 31, San Diego must have at least 2 active volunteer partnerships: partner confirmed, recurring schedule set, at least one client placed. If short of this, flag it now.", submit:"Placement tracker updated showing at least 2 active partnerships. Partner feedback form sent to at least 1 partner."},
+    {row:64, month:"December 2026",  quarter:"Q2", section:"Internal Service Pathways", deliverable:"Confirm at Least 2 Documented Referrals", instructions:"By December 31, document at least 2 referrals from CE to another OFA program using the referral form. A completed transition is not required — practicing the process is the Q2 goal.", submit:"At least 2 referral forms completed. Receiving program notified for each. Follow-up dates set."},
+    {row:65, month:"December 2026",  quarter:"Q2", section:"Monthly Mini-Tracker", deliverable:"Complete Monthly Mini-Tracker by December 5", instructions:"Fill in the Mini-Tracker tab. This is the last month of Q2. Miriam and Brandan will use the December Mini-Tracker as a key input to the Q2 Quarterly Assessment.", submit:"Mini-Tracker tab fully completed. Submitted to Miriam by December 5."},
+  ],
+  // IE and NorCal have identical items with same row structure
+};
+
+// Generate IE and NorCal from SD by adjusting row offsets
+// IE rows offset by 0 (same rows, different sheet)
+// NorCal rows offset by 0 (same rows, different sheet)
+TRACKER_ROWS.ie     = TRACKER_ROWS.sd.map(item => ({...item}));
+TRACKER_ROWS.norcal = TRACKER_ROWS.sd.map(item => ({...item}));
+
+// Brandan Operations tab row mapping
+// SD deliverables: Brandan rows 20-83 (offset 20, index 0-63)
+// IE deliverables: Brandan rows 84-147 (offset 84, index 0-63)
+// NorCal deliverables: Brandan rows 148-211 (offset 148, index 0-63)
+const BRANDAN_OFFSETS = { sd: 20, ie: 84, norcal: 148 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MSAL SETUP
+// ══════════════════════════════════════════════════════════════════════════════
+// Initialize our custom auth with config values
+const graphScopes = ["User.Read", "Files.ReadWrite", "Sites.ReadWrite.All"];
+MsAuth.init(CONFIG.clientId, CONFIG.tenantId, graphScopes);
+
+let currentUser = null;
+let currentRole = null;
+let accessToken = null;
+let notifications = [];
+let statuses = {};
+let notes = {};
+let brandanComments = {};
+let guidances = {};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUTH FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+async function signIn() {
+  try {
+    await MsAuth.loginRedirect();
+  } catch (e) {
+    console.error("Login failed:", e);
+    showToast("Sign-in failed: " + e.message, "error");
+  }
+}
+
+async function handleLogin(result) {
+  const email = (result.account.username || result.account.mail || '').toLowerCase();
+  const role  = CONFIG.roles[email];
+
+  if (!role) {
+    showToast("Your account is not configured for this portal. Contact Brandan.", "error");
+    return;
+  }
+
+  currentUser = result.account;
+  currentRole = role;
+  accessToken = result.accessToken;
+
+  // Update header
+  document.getElementById("user-name").textContent  = role.name;
+  document.getElementById("user-role").textContent  = role.role;
+  document.getElementById("user-avatar").textContent = role.name.charAt(0);
+  document.getElementById("user-avatar").style.background = role.color;
+
+  // Show app
+  document.getElementById("auth-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  buildNav();
+  buildPages();
+  loadData();
+  checkNotifications();
+  loadPendingAlerts();
+
+  // Show View As bar for Brandan only
+  if (email === "bkelly@optionsforall.org") {
+    const bar = document.getElementById("view-as-bar");
+    if (bar) bar.style.display = "flex";
+  }
+
+  // Poll for new notifications every 60s
+  setInterval(checkNotifications, 60000);
+}
+
+async function signOut() {
+  MsAuth.logout();
+}
+
+async function getToken() {
+  try {
+    return await MsAuth.acquireTokenSilent();
+  } catch {
+    await MsAuth.loginRedirect();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GRAPH API — READ / WRITE EXCEL CELLS
+// ══════════════════════════════════════════════════════════════════════════════
+const GRAPH_BASE = `https://graph.microsoft.com/v1.0/sites/${CONFIG.siteId}/drives/${CONFIG.driveId}/items/${CONFIG.fileId}/workbook`;
+
+async function readRange(sheet, range) {
+  const token = await getToken();
+  const url   = `${GRAPH_BASE}/worksheets('${encodeURIComponent(sheet)}')/range(address='${range}')`;
+  const resp  = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!resp.ok) throw new Error(await resp.text());
+  return (await resp.json()).values;
+}
+
+async function writeCell(sheet, cellAddress, value) {
+  const token = await getToken();
+  const url   = `${GRAPH_BASE}/worksheets('${encodeURIComponent(sheet)}')/range(address='${cellAddress}')`;
+  const resp  = await fetch(url, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ values: [[value]] }),
+  });
+  if (!resp.ok) throw new Error(await resp.text());
+  return resp.json();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOAD DATA — read status and notes from Excel
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadData() {
+  console.log("loadData called, role:", currentRole?.view, "token:", accessToken ? "present" : "missing");
+  const view = currentRole.view;
+  const sheets = view === "ops" ? ["sd","ie","norcal"]
+               : view === "lead" ? ["sd","ie","norcal"]
+               : [currentRole.sheet];
+
+  for (const sheetKey of sheets) {
+    const sheetName = CONFIG.sheets[sheetKey];
+    const items     = TRACKER_ROWS[sheetKey] || [];
+    console.log(`Loading ${sheetKey}: sheet="${sheetName}", items=${items.length}`);
+    if (!items.length) continue;
+
+    try {
+      // Read status column G and notes column H for all item rows
+      const firstRow = items[0].row;
+      const lastRow  = items[items.length - 1].row;
+      const [statusVals, notesVals, guidanceVals] = await Promise.all([
+        readRange(sheetName, `G${firstRow}:G${lastRow}`),
+        readRange(sheetName, `H${firstRow}:H${lastRow}`),
+        readRange(sheetName, `K${firstRow}:K${lastRow}`),
+      ]);
+
+      // Read Brandan comments from Operations tab
+      const brandanSheet = CONFIG.sheets.brandan;
+      const bOffset = BRANDAN_OFFSETS[sheetKey];
+      const brandanVals = await readRange(brandanSheet,
+        `I${bOffset}:I${bOffset + items.length - 1}`);
+      const brandanOwners = await readRange(brandanSheet,
+        `J${bOffset}:J${bOffset + items.length - 1}`);
+
+      // Apply to module-level state and DOM
+      items.forEach((item, idx) => {
+        const rowOffset = item.row - firstRow;
+        const status    = statusVals[rowOffset]?.[0] || "Not Started";
+        const note      = notesVals[rowOffset]?.[0]  || "";
+        const bComment  = brandanVals[idx]?.[0]       || "";
+        const bOwner    = brandanOwners[idx]?.[0]     || "";
+
+        // Store in module-level state
+        const guidance = guidanceVals[rowOffset]?.[0] || "";
+        statuses[`${sheetKey}-${item.row}`] = status;
+        notes[`${sheetKey}-${item.row}`] = note;
+        brandanComments[`${sheetKey}-${item.row}`] = bComment;
+        guidances[`${sheetKey}-${item.row}`] = guidance;
+
+        updateItemDOM(sheetKey, item.row, status, note, bComment, bOwner, guidance);
+      });
+    } catch (e) {
+      console.error(`Failed to load data for ${sheetKey}:`, e);
+      showToast(`Failed to load ${sheetKey} data: ${e.message}`, "error");
+    }
+  }
+
+  // For ops view — render flagged items after all data loaded
+  if (currentRole.view === "ops") {
+    renderFlaggedItems();
+  }
+
+  // Update all region stats
+  updateAllRegionStats();
+}
+
+function renderFlaggedItems() {
+  const tbody = document.getElementById("flagged-tbody");
+  const loading = document.getElementById("flagged-loading");
+  const table = document.getElementById("flagged-table");
+  const empty = document.getElementById("flagged-empty");
+  if (!tbody) return;
+
+  const flagged = [];
+  ["sd","ie","norcal"].forEach(key => {
+    const region = {sd:"San Diego",ie:"Inland Empire",norcal:"NorCal"}[key];
+    const items = TRACKER_ROWS[key] || [];
+    items.forEach(item => {
+      const st = statuses[`${key}-${item.row}`];
+      if (st === "At Risk" || st === "Off Track") {
+        flagged.push({ key, region, row:item.row, month:item.month, deliverable:item.deliverable, status:st, note:notes[`${key}-${item.row}`]||"" });
+      }
+    });
+  });
+
+  if (loading) loading.style.display = "none";
+
+  if (flagged.length === 0) {
+    if (empty) empty.style.display = "block";
+    if (table) table.style.display = "none";
+    return;
+  }
+
+  if (table) table.style.display = "table";
+  tbody.innerHTML = flagged.map(f => `
+    <tr class="${f.status === "Off Track" ? "off-track" : "at-risk"}">
+      <td>${f.region}</td>
+      <td>${f.month}</td>
+      <td><strong>${escHtml(f.deliverable)}</strong></td>
+      <td><span class="status-pill ${f.status === "Off Track" ? "pill-off-track" : "pill-at-risk"}">${f.status}</span></td>
+      <td>${escHtml(f.note)}</td>
+      <td><input class="corrective-input" placeholder="Add corrective action..." /></td>
+      <td><input class="corrective-input" placeholder="Owner..." style="width:80px"/></td>
+      <td><button onclick="saveBrandanComment('${f.key}',${f.row},this)" style="background:#1F3864;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">Save</button></td>
+    </tr>
+  `).join("");
+}
+
+function updateAllRegionStats() {
+  ["sd","ie","norcal"].forEach(key => {
+    const items = TRACKER_ROWS[key] || [];
+    let comp=0, ar=0, ot=0, ip=0;
+    items.forEach(item => {
+      const st = statuses[`${key}-${item.row}`] || "Not Started";
+      if (st === "Complete") comp++;
+      if (st === "At Risk") ar++;
+      if (st === "Off Track") ot++;
+      if (st === "In Progress") ip++;
+    });
+    const u = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    u(`stat-complete-${key}`, comp);
+    u(`stat-inprogress-${key}`, ip);
+    u(`stat-atrisk-${key}`, ar);
+    u(`stat-offtrack-${key}`, ot);
+    u(`sum-complete-${key}`, comp);
+    u(`sum-atrisk-${key}`, ar);
+    u(`sum-offtrack-${key}`, ot);
+
+    // Also update progress bars on Director pages
+    updateMonthProgress(key);
+  });
+}
+
+async function saveBrandanComment(sheetKey, row, btn) {
+  const tr = btn.closest("tr");
+  const inputs = tr.querySelectorAll(".corrective-input");
+  const comment = inputs[0]?.value || "";
+  const owner   = inputs[1]?.value || "";
+  try {
+    const tk = await getToken();
+    const bRow = BRANDAN_OFFSETS[sheetKey] + (TRACKER_ROWS[sheetKey]||[]).findIndex(i=>i.row===row);
+    await Promise.all([
+      writeCell(CONFIG.sheets.brandan, `I${bRow}`, comment, tk),
+      writeCell(CONFIG.sheets.brandan, `J${bRow}`, owner, tk),
+    ]);
+    showToast("Corrective action saved", "success");
+  } catch(e) {
+    showToast("Save failed: " + e.message, "error");
+  }
+}
+
+function updateItemDOM(sheetKey, rowNum, status, notes, brandanComment, brandanOwner, guidance="") {
+  const card     = document.getElementById(`item-${sheetKey}-${rowNum}`);
+  if (!card) return;
+
+  const sel      = card.querySelector(".status-select");
+  const notesEl  = card.querySelector(".notes-input");
+  const commentEl= card.querySelector(".brandan-comment");
+  const commentTx= card.querySelector(".brandan-comment-text");
+  const ownerEl  = card.querySelector(".brandan-owner");
+
+  if (sel) {
+    sel.value = status;
+    sel.className = "status-select " + statusClass(status);
+  }
+  if (notesEl && notes) notesEl.value = notes;
+
+  // Update card row color
+  card.className = "item-card " + statusClass(status);
+
+  // Brandan comment
+  // Update monthly guidance
+  const guidanceEl = card.querySelector(".monthly-guidance");
+  if (guidanceEl && guidance) {
+    guidanceEl.style.display = "block";
+    const guidanceTx = guidanceEl.querySelector(".monthly-guidance-text");
+    if (guidanceTx) guidanceTx.textContent = guidance;
+  }
+
+  if (commentEl) {
+    if (brandanComment) {
+      commentEl.classList.add("visible");
+      if (commentTx) commentTx.textContent = brandanComment;
+      if (ownerEl && brandanOwner) ownerEl.textContent = `Owner: ${brandanOwner}`;
+      // Add to notifications if unread
+      addNotification(sheetKey, rowNum, brandanComment);
+    }
+  }
+
+  // Update month progress bars
+  updateMonthProgress(sheetKey);
+}
+
+function statusClass(status) {
+  if (!status) return "";
+  return "status-" + status.toLowerCase().replace(/ /g, "-");
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SAVE — write status and notes back to Excel
+// ══════════════════════════════════════════════════════════════════════════════
+async function saveItem(sheetKey, rowNum, btn) {
+  const card    = document.getElementById(`item-${sheetKey}-${rowNum}`);
+  const sel     = card.querySelector(".status-select");
+  const notesEl = card.querySelector(".notes-input");
+  const sheet   = CONFIG.sheets[sheetKey];
+
+  btn.textContent = "Saving...";
+  btn.className   = "save-btn saving";
+  btn.disabled    = true;
+
+  try {
+    await Promise.all([
+      writeCell(sheet, `G${rowNum}`, sel.value),
+      writeCell(sheet, `H${rowNum}`, notesEl.value),
+    ]);
+
+    // Update card appearance
+    card.className = "item-card " + statusClass(sel.value);
+    sel.className  = "status-select " + statusClass(sel.value);
+
+    // Alert Brandan if At Risk or Off Track
+    if (sel.value === "At Risk" || sel.value === "Off Track") {
+      await alertBrandan(sheetKey, rowNum, sel.value, notesEl.value);
+    }
+
+    btn.textContent = "Saved";
+    btn.className   = "save-btn saved";
+    showToast("Saved successfully", "success");
+
+    // Reset button
+    setTimeout(() => {
+      btn.textContent = "Save";
+      btn.className   = "save-btn";
+      btn.disabled    = false;
+    }, 2000);
+
+    updateMonthProgress(sheetKey);
+  } catch (e) {
+    console.error("Save failed:", e);
+    btn.textContent = "Save";
+    btn.className   = "save-btn";
+    btn.disabled    = false;
+    showToast("Save failed. Check your connection.", "error");
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+const seenComments = new Set(JSON.parse(sessionStorage.getItem("seen_comments") || "[]"));
+
+function addNotification(sheetKey, rowNum, comment) {
+  const key = `${sheetKey}-${rowNum}`;
+  if (seenComments.has(key)) return;
+
+  const item = (TRACKER_ROWS[sheetKey] || []).find(i => i.row === rowNum);
+  if (!item) return;
+
+  notifications.unshift({
+    id: key, sheetKey, rowNum,
+    title: `Action required: ${item.deliverable.substring(0, 40)}`,
+    body: comment,
+    time: new Date().toLocaleDateString("en-US", {month:"short", day:"numeric"}),
+    unread: true,
+  });
+
+  renderNotifications();
+}
+
+async function checkNotifications() {
+  // Re-read Brandan comment columns for current user's sheet(s)
+  // This is called on a timer to catch new comments
+  const sheetKey = currentRole.sheet === "brandan" ? null : currentRole.sheet;
+  if (!sheetKey) return;
+
+  const items    = TRACKER_ROWS[sheetKey] || [];
+  const bOffset  = BRANDAN_OFFSETS[sheetKey];
+  try {
+    const brandanVals = await readRange(
+      CONFIG.sheets.brandan,
+      `I${bOffset}:I${bOffset + items.length - 1}`
+    );
+    items.forEach((item, idx) => {
+      const comment = brandanVals[idx]?.[0] || "";
+      if (comment) addNotification(sheetKey, item.row, comment);
+    });
+  } catch (e) { /* silently fail */ }
+}
+
+function renderNotifications() {
+  const unread = notifications.filter(n => n.unread).length;
+  const badge  = document.getElementById("notif-badge");
+  badge.textContent = unread;
+  badge.classList.toggle("visible", unread > 0);
+
+  const list = document.getElementById("notif-list");
+  if (!notifications.length) {
+    list.innerHTML = '<div class="notif-empty">No notifications yet.</div>';
+    return;
+  }
+
+  list.innerHTML = notifications.map(n => `
+    <div class="notif-item ${n.unread ? 'unread' : ''}">
+      <div class="notif-title">${escHtml(n.title)}</div>
+      <div class="notif-body">${escHtml(n.body)}</div>
+      <div class="notif-time">${n.time}</div>
+    </div>
+  `).join("");
+}
+
+function toggleNotifications() {
+  const panel = document.getElementById("notif-panel");
+  panel.classList.toggle("open");
+  // Mark all as read
+  notifications.forEach(n => {
+    n.unread = false;
+    seenComments.add(n.id);
+  });
+  sessionStorage.setItem("seen_comments", JSON.stringify([...seenComments]));
+  renderNotifications();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BUILD NAV + PAGES
+// ══════════════════════════════════════════════════════════════════════════════
+function buildNav() {
+  const nav   = document.getElementById("nav-bar");
+  const view  = currentRole.view;
+  const tabs  = [];
+
+  if (view === "director") {
+    tabs.push({ id:"my-items",  label:`${currentRole.region} — My Items` });
+    tabs.push({ id:"summary",   label:"My Progress" });
+  } else if (view === "lead") {
+    tabs.push({ id:"my-items",  label:"San Diego — My Items" });
+    tabs.push({ id:"all-regions",label:"All Regions Overview" });
+    tabs.push({ id:"summary",   label:"My Progress" });
+  } else if (view === "ops") {
+    tabs.push({ id:"flagged",   label:"Flagged Items" });
+    tabs.push({ id:"all-regions",label:"All Regions Overview" });
+    tabs.push({ id:"risk-log",  label:"Risk Log" });
+  }
+
+  nav.innerHTML = tabs.map((t, i) => `
+    <button class="nav-tab ${i === 0 ? 'active' : ''}"
+            onclick="switchTab('${t.id}')" id="tab-${t.id}">
+      ${t.label}
+    </button>
+  `).join("");
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(`tab-${tabId}`)?.classList.add("active");
+  document.getElementById(`page-${tabId}`)?.classList.add("active");
+
+  // Refresh stats when switching to all-regions or progress tabs
+  if (tabId === "all-regions" || tabId === "progress") {
+    setTimeout(updateAllRegionStats, 50);
+  }
+  if (tabId === "flagged") {
+    setTimeout(renderFlaggedItems, 50);
+  }
+}
+
+function buildPages() {
+  const container = document.getElementById("pages-container");
+  const view      = currentRole.view;
+  let html        = "";
+
+  // My Items page
+  if (view !== "ops") {
+    const sheetKey = currentRole.sheet === "brandan" ? "sd" : currentRole.sheet;
+    html += buildMyItemsPage(sheetKey);
+  }
+
+  // All Regions overview (Miriam lead + Brandan)
+  if (view === "lead" || view === "ops") {
+    html += buildAllRegionsPage();
+  }
+
+  // Summary / Progress page
+  if (view !== "ops") {
+    html += buildSummaryPage();
+  }
+
+  // Flagged items (Brandan ops view)
+  if (view === "ops") {
+    html += buildFlaggedPage();
+  }
+
+  container.innerHTML = html;
+
+  // Activate first page
+  const firstPage = container.querySelector(".page");
+  if (firstPage) firstPage.classList.add("active");
+}
+
+// ── MY ITEMS PAGE ─────────────────────────────────────────────────────────────
+function buildMyItemsPage(sheetKey) {
+  const items = TRACKER_ROWS[sheetKey] || [];
+  const months = [...new Set(items.map(i => i.month))];
+
+  // Get current month based on today's date
+  const today = new Date();
+  const currentMonthLabel = (() => {
+    // Find the month whose items we're currently in (or closest upcoming)
+    const MONTH_ORDER = ["July 2026","August 2026","September 2026",
+      "October 2026","November 2026","December 2026",
+      "January 2027","February 2027","March 2027",
+      "April 2027","May 2027","June 2027"];
+    const now = today.getFullYear() * 100 + (today.getMonth() + 1);
+    const MONTH_NUMS = {
+      "July 2026":2607,"August 2026":2608,"September 2026":2609,
+      "October 2026":2610,"November 2026":2611,"December 2026":2612,
+      "January 2027":2701,"February 2027":2702,"March 2027":2703,
+      "April 2027":2704,"May 2027":2705,"June 2027":2706
+    };
+    // Find first month >= today, else last month
+    for (const m of MONTH_ORDER) {
+      if (MONTH_NUMS[m] >= now) return m;
+    }
+    return MONTH_ORDER[MONTH_ORDER.length - 1];
+  })();
+  const defaultMonth = months.includes(currentMonthLabel) ? currentMonthLabel : months[0];
+
+  const monthBlocks = months.map(month => {
+    const monthItems = items.filter(i => i.month === month);
+    const q = monthItems[0]?.quarter || "Q1";
+    const goal = getMonthGoal(month);
+
+    const cards = monthItems.map(item => buildItemCard(sheetKey, item)).join("");
+
+    return `
+      <div class="month-block" id="month-${sheetKey}-${month.replace(/ /g,'-')}">
+        <div class="month-header" onclick="toggleMonth('${sheetKey}','${month}')">
+          <div class="month-header-left">
+            <span class="month-name">${month}</span>
+            <span class="quarter-badge ${q.toLowerCase()}">${q}</span>
+          </div>
+          <div class="month-progress">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" id="prog-${sheetKey}-${month.replace(/ /g,'-')}" style="width:0%"></div>
+            </div>
+            <span id="prog-text-${sheetKey}-${month.replace(/ /g,'-')}">0 of ${monthItems.length}</span>
+            <span class="collapse-icon">▾</span>
+          </div>
+        </div>
+        ${goal ? `<div class="goal-strip">${goal}</div>` : ""}
+        <div class="month-items">${cards}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="page" id="page-my-items">
+      <div class="page-header">
+        <div class="page-title">${currentRole.region} — Monthly Focus</div>
+        <div class="page-subtitle">
+          ${currentRole.name}'s items for FY 2026–27.
+          Update status and notes directly here — changes save to the Excel tracker automatically.
+        </div>
+      </div>
+      <div class="filter-bar">
+        <label class="filter-label" for="month-dropdown-${sheetKey}">Viewing month:</label>
+        <select class="month-select" id="month-dropdown-${sheetKey}"
+                onchange="filterMonth(this.value, '${sheetKey}')">
+          ${months.map(m => `<option value="${m}" ${m===defaultMonth?'selected':''}>${m}</option>`).join('')}
+        </select>
+      </div>
+      ${monthBlocks}
+    </div>
+  `;
+  // Schedule: hide all months except the default after DOM renders
+  setTimeout(() => filterMonth(defaultMonth, sheetKey), 0);
+  return html;
+}
+
+function buildItemCard(sheetKey, item) {
+  return `
+    <div class="item-card" id="item-${sheetKey}-${item.row}">
+      <div class="item-main">
+        <div class="item-section">${escHtml(item.section)}</div>
+        <div class="item-title">${escHtml(item.deliverable)}</div>
+        <div class="item-instructions">${escHtml(item.instructions)}</div>
+        <div class="item-submit">${escHtml(item.submit)}</div>
+        <div class="monthly-guidance" id="guidance-${sheetKey}-${item.row}">
+          <div class="monthly-guidance-label">📋 Monthly Guidance — Brandan</div>
+          <div class="monthly-guidance-text"></div>
+          ${currentRole.view === "ops" ? `<textarea class="monthly-guidance-input" placeholder="Add monthly guidance after working session..." id="guidance-input-${sheetKey}-${item.row}"></textarea>` : ""}
+        </div>
+        <div class="brandan-comment" id="comment-${sheetKey}-${item.row}">
+          <div class="brandan-comment-label">Brandan — Action Required</div>
+          <div class="brandan-comment-text"></div>
+          <div class="brandan-owner"></div>
+        </div>
+      </div>
+      <div class="item-controls">
+        <select class="status-select" onchange="this.className='status-select '+statusClass(this.value);updateFlaggedNotice(this,'${sheetKey}',${item.row})">
+          <option>Not Started</option>
+          <option>In Progress</option>
+          <option>At Risk</option>
+          <option>Off Track</option>
+          <option>Complete</option>
+          <option>Deferred</option>
+        </select>
+        <div class="flagged-notice" id="flag-notice-${sheetKey}-${item.row}"></div>
+        <textarea class="notes-input" placeholder="Notes / evidence link..."></textarea>
+        <button class="save-btn" onclick="saveItem('${sheetKey}',${item.row},this)">Save</button>
+        ${currentRole.view === "ops" ? `<button class="save-btn" style="background:#1F7A6E;margin-top:2px" onclick="saveGuidance('${sheetKey}',${item.row},this)">Save Guidance</button>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+// ── ALL REGIONS OVERVIEW ──────────────────────────────────────────────────────
+function buildAllRegionsPage() {
+  return `
+    <div class="page" id="page-all-regions">
+      <div class="page-header">
+        <div class="page-title">All Regions — Overview</div>
+        <div class="page-subtitle">Live summary across all three regions. Updates as Directors save their items.</div>
+      </div>
+      <div class="region-grid">
+        ${["sd","ie","norcal"].map(key => {
+          const names = {sd:"San Diego", ie:"Inland Empire", norcal:"NorCal"};
+          const colors= {sd:"sd", ie:"ie", norcal:"nc"};
+          const total = (TRACKER_ROWS[key]||[]).length;
+          return `
+            <div class="region-card">
+              <div class="region-card-header ${colors[key]}">${names[key]}</div>
+              <div class="region-card-body">
+                <div class="region-stat">
+                  <span class="region-stat-label">Total items</span>
+                  <span class="region-stat-val">${total}</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">Complete</span>
+                  <span class="region-stat-val green" id="stat-complete-${key}">—</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">In Progress</span>
+                  <span class="region-stat-val" id="stat-inprogress-${key}">—</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">At Risk</span>
+                  <span class="region-stat-val orange" id="stat-atrisk-${key}">—</span>
+                </div>
+                <div class="region-stat">
+                  <span class="region-stat-label">Off Track</span>
+                  <span class="region-stat-val red" id="stat-offtrack-${key}">—</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+      <div class="loading-state" id="all-regions-loading">
+        <div class="spinner"></div> Loading regional data...
+      </div>
+    </div>
+  `;
+}
+
+// ── SUMMARY PAGE ──────────────────────────────────────────────────────────────
+function buildSummaryPage() {
+  const sheetKey = currentRole.sheet === "brandan" ? "sd" : currentRole.sheet;
+  const total    = (TRACKER_ROWS[sheetKey]||[]).length;
+  return `
+    <div class="page" id="page-summary">
+      <div class="page-header">
+        <div class="page-title">${currentRole.name}'s Progress — FY 2026–27</div>
+        <div class="page-subtitle">Live counts from ${currentRole.region}. Updates as items are saved.</div>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card total">
+          <div class="summary-number">${total}</div>
+          <div class="summary-label">Total deliverables</div>
+        </div>
+        <div class="summary-card complete">
+          <div class="summary-number" id="sum-complete-${sheetKey}">—</div>
+          <div class="summary-label">Complete</div>
+        </div>
+        <div class="summary-card at-risk">
+          <div class="summary-number" id="sum-atrisk-${sheetKey}">—</div>
+          <div class="summary-label">At Risk</div>
+        </div>
+        <div class="summary-card off-track">
+          <div class="summary-number" id="sum-offtrack-${sheetKey}">—</div>
+          <div class="summary-label">Off Track</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── FLAGGED PAGE (Brandan) ────────────────────────────────────────────────────
+function buildFlaggedPage() {
+  return `
+    <div class="page" id="page-flagged">
+      <div class="page-header">
+        <div class="page-title">Flagged Items — All Regions</div>
+        <div class="page-subtitle">Items marked At Risk or Off Track across all three Director tabs. Add corrective action and assign an owner.</div>
+      </div>
+      <div class="loading-state" id="flagged-loading">
+        <div class="spinner"></div> Loading flagged items...
+      </div>
+      <table class="ops-table" id="flagged-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Region</th><th>Month</th><th>Deliverable</th>
+            <th>Status</th><th>Director Notes</th>
+            <th>Corrective Action</th><th>Owner</th><th>Save</th>
+          </tr>
+        </thead>
+        <tbody id="flagged-tbody"></tbody>
+      </table>
+      <div id="flagged-empty" style="display:none" class="notif-empty">
+        No items currently flagged. All regions are on track.
+      </div>
+    </div>
+  `;
+}
+
+// ── RISK LOG PAGE ─────────────────────────────────────────────────────────────
+function buildRiskLogPage() {
+  // Placeholder — reads from Risk and Issue Log sheet
+  return `
+    <div class="page" id="page-risk-log">
+      <div class="page-header">
+        <div class="page-title">Risk and Issue Log</div>
+        <div class="page-subtitle">Proactive risks tracked by Brandan. Updated monthly. Feeds the CPO Dashboard quarterly narrative.</div>
+      </div>
+      <div class="loading-state">
+        <div class="spinner"></div> Loading risk log...
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MONTH FILTER + COLLAPSE
+// ══════════════════════════════════════════════════════════════════════════════
+function filterMonth(month, sheetKey) {
+  // Hide all month blocks for this sheet, show only selected
+  document.querySelectorAll(".month-block").forEach(block => {
+    if (!block.id.startsWith("month-" + sheetKey + "-")) return;
+    const blockMonth = block.id
+      .replace("month-" + sheetKey + "-", "")
+      .replace(/-/g, " ");
+    block.style.display = blockMonth === month.replace(/-/g," ") ? "" : "none";
+  });
+}
+
+function toggleMonth(sheetKey, month) {
+  const block = document.getElementById(`month-${sheetKey}-${month.replace(/ /g,"-")}`);
+  if (block) block.classList.toggle("collapsed");
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PROGRESS TRACKING
+// ══════════════════════════════════════════════════════════════════════════════
+function updateMonthProgress(sheetKey) {
+  const items  = TRACKER_ROWS[sheetKey] || [];
+  const months = [...new Set(items.map(i => i.month))];
+
+  months.forEach(month => {
+    const monthItems = items.filter(i => i.month === month);
+    let complete = 0;
+    monthItems.forEach(item => {
+      const card = document.getElementById(`item-${sheetKey}-${item.row}`);
+      if (card?.querySelector(".status-select")?.value === "Complete") complete++;
+    });
+
+    const pct     = monthItems.length ? (complete / monthItems.length * 100) : 0;
+    const key     = month.replace(/ /g,"-");
+    const bar     = document.getElementById(`prog-${sheetKey}-${key}`);
+    const text    = document.getElementById(`prog-text-${sheetKey}-${key}`);
+    if (bar)  bar.style.width = pct + "%";
+    if (text) text.textContent = `${complete} of ${monthItems.length}`;
+  });
+
+  // Update summary stats
+  const allItems = items;
+  const counts   = {complete:0, atrisk:0, offtrack:0, inprogress:0};
+  allItems.forEach(item => {
+    const card = document.getElementById(`item-${sheetKey}-${item.row}`);
+    const status = card?.querySelector(".status-select")?.value || "";
+    if (status === "Complete")   counts.complete++;
+    if (status === "At Risk")    counts.atrisk++;
+    if (status === "Off Track")  counts.offtrack++;
+    if (status === "In Progress")counts.inprogress++;
+  });
+
+  const update = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  update(`sum-complete-${sheetKey}`,  counts.complete);
+  update(`sum-atrisk-${sheetKey}`,    counts.atrisk);
+  update(`sum-offtrack-${sheetKey}`,  counts.offtrack);
+  update(`stat-complete-${sheetKey}`, counts.complete);
+  update(`stat-inprogress-${sheetKey}`,counts.inprogress);
+  update(`stat-atrisk-${sheetKey}`,   counts.atrisk);
+  update(`stat-offtrack-${sheetKey}`, counts.offtrack);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MONTH GOALS
+// ══════════════════════════════════════════════════════════════════════════════
+const MONTH_GOALS = {
+  "July 2026":      "Q1 goal: Establish governance, confirm roles, and orient teams. By end of July the charter is signed, definitions are agreed, and all calendar invitations are accepted.",
+  "August 2026":    "August is the heaviest assessment month. Complete all baselines, assessments, and inventories. Everything documented now becomes the 'before' picture for year-end comparison.",
+  "September 2026": "Finalize everything before Q2 begins. By September 30: finalized tools, confirmed pilot plan, identified pilot clients, and recommended hub locations. Q2 launches October 1.",
+  "October 2026":   "Q2 goal: Train teams, launch pilots, begin implementing the enhanced CE framework. Prioritize training first, then pilot launch.",
+  "November 2026":  "Deepen implementation. Structured activities running, volunteer placements establishing, benefits prompts in use, transportation data being tracked.",
+  "December 2026":  "Early pilot review month. Surface problems now so Q3 fixes them. Q3 expansion cannot happen on a shaky foundation.",
+  "January 2027":   "Q3 goal: Evaluate Q2, fix what did not work, and expand to all CE programs. Begin with an honest lessons-learned review.",
+  "February 2027":  "Quality and accountability month. Conduct reviews, check ISP compliance, expand volunteer participation. Is the whole region implementing — not just pilot sites?",
+  "March 2027":     "By March 31 every CE site must be implementing the enhanced framework. Last chance to correct gaps before Q4 finalizes the permanent model.",
+  "April 2027":     "Q4 goal: Complete full implementation, contribute to the annual evaluation, and build what sustains this work in FY 2027-28.",
+  "May 2027":       "Finalize the permanent model. Review the final framework. Confirm compliance expectations. Embed CE measures into manager goals for FY 2027-28.",
+  "June 2027":      "Close the project. Year-end evaluation, executive presentation, and sustainability handoff all happen this month.",
+};
+function getMonthGoal(month) { return MONTH_GOALS[month] || ""; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════════════════════
+function updateFlaggedNotice(sel, sheetKey, rowNum) {
+  const notice = document.getElementById(`flag-notice-${sheetKey}-${rowNum}`);
+  if (!notice) return;
+  if (sel.value === "At Risk") {
+    notice.className = "flagged-notice at-risk";
+    notice.textContent = "⚠ Saving will alert Brandan";
+  } else if (sel.value === "Off Track") {
+    notice.className = "flagged-notice off-track";
+    notice.textContent = "🚨 Saving will alert Brandan immediately";
+  } else {
+    notice.className = "flagged-notice";
+    notice.textContent = "";
+  }
+}
+
+function escHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function statusClass(status) {
+  if (!status) return "";
+  return "status-" + status.toLowerCase().replace(/ /g,"-");
+}
+
+function showToast(msg, type="") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = `toast ${type} show`;
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ALERT BRANDAN — fires when a Director marks something At Risk or Off Track
+// Writes a flag to a dedicated "Alerts" sheet in the Excel file via Graph API
+// Power Automate watches that sheet and emails Brandan immediately
+// ══════════════════════════════════════════════════════════════════════════════
+async function alertBrandan(sheetKey, rowNum, status, notes) {
+  // Find the deliverable name for context
+  const items    = TRACKER_ROWS[sheetKey] || [];
+  const item     = items.find(i => i.row === rowNum);
+  const region   = { sd:"San Diego", ie:"Inland Empire", norcal:"NorCal" }[sheetKey];
+  const dirName  = currentRole.name;
+  const deliv    = item?.deliverable || `Row ${rowNum}`;
+  const month    = item?.month || "";
+  const timestamp = new Date().toLocaleString("en-US", {
+    month:"short", day:"numeric", year:"numeric",
+    hour:"numeric", minute:"2-digit", hour12:true
+  });
+
+  // Write alert row to the Brandan Operations tab col L (Alert column)
+  // This triggers Power Automate which watches for changes in the Excel file
+  try {
+    const brandanRow = getBrandanRow(sheetKey, rowNum);
+    if (brandanRow) {
+      await writeCell(CONFIG.sheets.brandan, `M${brandanRow}`,
+        `ALERT: ${status} | ${dirName} | ${region} | ${deliv} | ${month} | ${timestamp}`, tk);
+    }
+  } catch(e) {
+    console.error("Could not write alert to Operations tab:", e);
+  }
+
+  // Show in-portal alert banner for Brandan if he's currently signed in
+  // (stored in sessionStorage so Brandan sees it next time he opens the portal)
+  const alertKey = "pending_alerts";
+  const existing = JSON.parse(sessionStorage.getItem(alertKey) || "[]");
+  existing.push({
+    id: `${sheetKey}-${rowNum}-${Date.now()}`,
+    status, region, dirName, deliv, month, notes, timestamp,
+    unread: true,
+  });
+  sessionStorage.setItem(alertKey, JSON.stringify(existing));
+
+  // If current user IS Brandan, show a prominent in-portal alert immediately
+  if (currentRole.view === "ops") {
+    showStatusAlert(status, dirName, region, deliv);
+  }
+
+  // Add to notification panel for the Director themselves
+  addNotification(sheetKey, rowNum,
+    `You marked this ${status}. Brandan has been notified and will respond in your tracker.`);
+}
+
+function getBrandanRow(sheetKey, directorRow) {
+  const items  = TRACKER_ROWS[sheetKey] || [];
+  const offset = BRANDAN_OFFSETS[sheetKey];
+  const idx    = items.findIndex(i => i.row === directorRow);
+  return idx >= 0 ? offset + idx : null;
+}
+
+function showStatusAlert(status, dirName, region, deliv) {
+  // Show a prominent dismissible alert banner at top of flagged page
+  const color  = status === "Off Track" ? "var(--red)" : "var(--orange)";
+  const bgColor= status === "Off Track" ? "var(--lt-red)" : "var(--lt-orange)";
+  const banner = document.createElement("div");
+  banner.style.cssText = `
+    position:fixed; top:56px; left:0; right:0; z-index:300;
+    background:${bgColor}; border-bottom: 3px solid ${color};
+    padding:14px 32px; display:flex; align-items:center;
+    justify-content:space-between; gap:16px;
+    font-size:14px; color:${color}; font-weight:600;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  `;
+  banner.innerHTML = `
+    <span>
+      ⚠ ${dirName} (${region}) just marked "<strong>${escHtml(deliv.substring(0,50))}</strong>"
+      as <strong>${status}</strong>. Review and add a corrective action.
+    </span>
+    <button onclick="this.parentElement.remove()"
+            style="background:none;border:none;font-size:20px;cursor:pointer;color:${color}">×</button>
+  `;
+  document.body.appendChild(banner);
+
+  // Auto-dismiss after 10 seconds
+  setTimeout(() => banner.remove(), 10000);
+}
+
+// Load any pending alerts for Brandan when ops view opens
+async function saveGuidance(sheetKey, row, btn) {
+  const input = document.getElementById(`guidance-input-${sheetKey}-${row}`);
+  if (!input) return;
+  const guidance = input.value;
+  try {
+    const tk = await getToken();
+    const sheet = CONFIG.sheets[sheetKey];
+    await writeCell(sheet, `K${row}`, guidance, tk);
+    guidances[`${sheetKey}-${row}`] = guidance;
+    // Show guidance banner
+    const banner = document.getElementById(`guidance-${sheetKey}-${row}`);
+    if (banner) {
+      banner.style.display = "block";
+      const tx = banner.querySelector(".monthly-guidance-text");
+      if (tx) tx.textContent = guidance;
+    }
+    showToast("Monthly guidance saved", "success");
+  } catch(e) {
+    showToast("Save failed: " + e.message, "error");
+  }
+}
+
+function switchViewAs(viewKey) {
+  const viewMap = {
+    "ops":    { name:"Brandan Kelly", role:"Director of Operations",         view:"ops",      region:"All Regions",   sheet:"brandan", color:"#7030A0", initial:"B" },
+    "lead":   { name:"Miriam Burke",  role:"SD Director / Project Lead",     view:"lead",     region:"San Diego",     sheet:"sd",      color:"#1F3864", initial:"M" },
+    "sd":     { name:"Miriam Burke",  role:"SD Regional Director",           view:"director", region:"San Diego",     sheet:"sd",      color:"#1F3864", initial:"M" },
+    "ie":     { name:"Serena",        role:"Inland Empire Regional Director", view:"director", region:"Inland Empire", sheet:"ie",      color:"#1F7A6E", initial:"S" },
+    "norcal": { name:"Franchesca",    role:"NorCal Regional Director",       view:"director", region:"NorCal",        sheet:"norcal",  color:"#7F6000", initial:"F" },
+    "cpo":    { name:"Myles",         role:"Chief Program Officer",          view:"cpo",      region:"All Regions",   sheet:"brandan", color:"#7030A0", initial:"MY" },
+  };
+  const role = viewMap[viewKey];
+  if (!role) return;
+
+  // Switch role without signing out
+  currentRole = role;
+
+  // Update header display
+  document.getElementById("user-name").textContent  = role.name + " (Preview)";
+  document.getElementById("user-role").textContent  = role.role;
+  document.getElementById("user-avatar").textContent = role.initial;
+  document.getElementById("user-avatar").style.background = role.color;
+
+  // Rebuild nav and pages for the new role
+  buildNav();
+  buildPages();
+  loadData();
+
+  // Keep View As bar visible
+  const bar = document.getElementById("view-as-bar");
+  if (bar) bar.style.display = "flex";
+
+  showToast(`Previewing as ${role.name}`, "success");
+}
+
+function loadPendingAlerts() {
+  if (currentRole.view !== "ops") return;
+  const alerts = JSON.parse(sessionStorage.getItem("pending_alerts") || "[]");
+  const unread = alerts.filter(a => a.unread);
+  if (!unread.length) return;
+
+  unread.forEach(a => {
+    notifications.unshift({
+      id: a.id,
+      title: `${a.status}: ${a.dirName} — ${a.region}`,
+      body: `${a.deliv} | ${a.month}${a.notes ? " | Notes: " + a.notes : ""}`,
+      time: a.timestamp,
+      unread: true,
+    });
+  });
+
+  // Mark as read in sessionStorage
+  alerts.forEach(a => a.unread = false);
+  sessionStorage.setItem("pending_alerts", JSON.stringify(alerts));
+  renderNotifications();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HANDLE REDIRECT (MSAL redirect flow)
+// ══════════════════════════════════════════════════════════════════════════════
+(async () => {
+  try {
+    // Check if returning from Microsoft login redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('code')) {
+      const result = await MsAuth.handleRedirect();
+      if (result) await handleLogin(result);
+      return;
+    }
+
+    // Check for existing session
+    const account = MsAuth.getAccount();
+    if (account) {
+      try {
+        const token = await MsAuth.acquireTokenSilent();
+        await handleLogin({ account, accessToken: token });
+      } catch (e) {
+        console.log("Session expired:", e);
+        // Clear and show login
+        sessionStorage.clear();
+      }
+    }
+  } catch (e) {
+    console.log("Auth handler error:", e);
+    showToast("Authentication error: " + e.message, "error");
+  }
+})();
+</script>
+</body>
+</html>
+  },
+
+  async loginRedirect() {
+    const pkce = await this._generatePKCE();
+    const state = this._randomString(16);
+    sessionStorage.setItem('pkce_verifier', pkce.verifier);
+    sessionStorage.setItem('oauth_state', state);
+    sessionStorage.setItem('redirect_back', window.location.href);
+
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      response_type: 'code',
+      redirect_uri: window.location.origin + window.location.pathname,
+      scope: this.scopes.join(' ') + ' offline_access openid profile email',
+      state: state,
+      code_challenge: pkce.challenge,
+      code_challenge_method: 'S256',
+      response_mode: 'query',
+      prompt: 'select_account',
+    });
+    window.location.href = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/authorize?${params}`;
+  },
+
+  async handleRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+
+    if (error) throw new Error(params.get('error_description') || error);
+    if (!code) return null;
+
+    const storedState = sessionStorage.getItem('oauth_state');
+    if (state !== storedState) throw new Error('State mismatch');
+
+    const verifier = sessionStorage.getItem('pkce_verifier');
+    const tokenRes = await fetch(
+      `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: window.location.origin + window.location.pathname,
+          code_verifier: verifier,
+          scope: this.scopes.join(' ') + ' offline_access openid profile email',
+        })
+      }
+    );
+
+    if (!tokenRes.ok) {
+      const err = await tokenRes.json();
+      throw new Error(err.error_description || 'Token exchange failed');
+    }
+
+    const tokens = await tokenRes.json();
+    this._token = tokens.access_token;
+
+    // Decode JWT to get user info
+    const payload = JSON.parse(atob(tokens.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    this._account = {
+      username: payload.preferred_username || payload.email || payload.upn,
+      name: payload.name,
+      id: payload.oid,
+    };
+
+    // Store refresh token for later
+    if (tokens.refresh_token) {
+      sessionStorage.setItem('refresh_token', tokens.refresh_token);
+    }
+    sessionStorage.setItem('access_token', tokens.access_token);
+    sessionStorage.setItem('account', JSON.stringify(this._account));
+
+    // Clean URL
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    return { account: this._account, accessToken: this._token };
+  },
+
+  async acquireTokenSilent() {
+    // Try stored token first
+    const stored = sessionStorage.getItem('access_token');
+    if (stored) { this._token = stored; return stored; }
+
+    // Try refresh token
+    const refresh = sessionStorage.getItem('refresh_token');
+    if (!refresh) throw new Error('No refresh token');
+
+    const tokenRes = await fetch(
+      `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          grant_type: 'refresh_token',
+          refresh_token: refresh,
+          scope: this.scopes.join(' ') + ' offline_access openid profile email',
+        })
+      }
+    );
+
+    if (!tokenRes.ok) throw new Error('Refresh failed');
+    const tokens = await tokenRes.json();
+    this._token = tokens.access_token;
+    sessionStorage.setItem('access_token', tokens.access_token);
+    if (tokens.refresh_token) sessionStorage.setItem('refresh_token', tokens.refresh_token);
+    return this._token;
+  },
+
+  getAccount() {
+    if (this._account) return this._account;
+    const stored = sessionStorage.getItem('account');
+    if (stored) { this._account = JSON.parse(stored); return this._account; }
+    return null;
+  },
+
+  logout() {
+    sessionStorage.clear();
+    this._token = null; this._account = null;
+    window.location.href = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}`;
+  }
+};
+</script>
+
+<style>
+/* ── DESIGN TOKENS ──────────────────────────────────────────────────────── */
+:root {
+  --navy:        #1F3864;
+  --mid-blue:    #2E75B6;
+  --pale-blue:   #DEEAF1;
+  --teal:        #1F7A6E;
+  --lt-teal:     #C7E6E3;
+  --gold:        #7F6000;
+  --lt-gold:     #FFF2CC;
+  --orange:      #C55A11;
+  --lt-orange:   #FCE4D6;
+  --green:       #375623;
+  --lt-green:    #E2EFDA;
+  --red:         #C00000;
+  --lt-red:      #FFCCCC;
+  --purple:      #7030A0;
+  --lt-purple:   #E2CFEE;
+  --gray-100:    #F5F6F8;
+  --gray-200:    #EAECF0;
+  --gray-400:    #9CA3AF;
+  --gray-600:    #4B5563;
+  --gray-900:    #111827;
+  --white:       #FFFFFF;
+  --radius:      6px;
+  --shadow:      0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:   0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+}
+
+/* ── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── LOADING / AUTH SCREENS ─────────────────────────────────────────────── */
+#auth-screen {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh; gap: 24px;
+  background: var(--navy);
+}
+.auth-card {
+  background: var(--white); border-radius: 12px;
+  padding: 48px 40px; max-width: 440px; width: 100%;
+  text-align: center; box-shadow: var(--shadow-md);
+}
+.auth-logo {
+  font-size: 13px; font-weight: 600; letter-spacing: .04em;
+  color: var(--mid-blue); text-transform: uppercase; margin-bottom: 8px;
+}
+.auth-title {
+  font-size: 22px; font-weight: 700; color: var(--navy);
+  margin-bottom: 8px; line-height: 1.3;
+}
+.auth-subtitle {
+  font-size: 14px; color: var(--gray-600); margin-bottom: 32px;
+}
+.btn-signin {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--navy); color: var(--white);
+  border: none; border-radius: var(--radius);
+  padding: 12px 28px; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: background .15s; width: 100%;
+  justify-content: center;
+}
+.btn-signin:hover { background: var(--mid-blue); }
+.btn-signin svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ── MAIN APP SHELL ─────────────────────────────────────────────────────── */
+#app { display: none; min-height: 100vh; }
+
+/* ── HEADER ─────────────────────────────────────────────────────────────── */
+.header {
+  background: var(--navy);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; position: sticky; top: 0; z-index: 100;
+}
+.header-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.header-brand-name {
+  font-size: 13px; font-weight: 700; color: var(--white);
+  letter-spacing: .02em;
+}
+.header-project {
+  font-size: 12px; color: rgba(255,255,255,.55);
+}
+.header-right {
+  display: flex; align-items: center; gap: 16px;
+}
+.notification-bell {
+  position: relative; cursor: pointer;
+  color: rgba(255,255,255,.7); transition: color .15s;
+  background: none; border: none; padding: 4px;
+}
+.notification-bell:hover { color: var(--white); }
+.notification-badge {
+  position: absolute; top: -2px; right: -2px;
+  background: var(--red); color: var(--white);
+  font-size: 10px; font-weight: 700;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--navy);
+  display: none;
+}
+.notification-badge.visible { display: flex; }
+
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+}
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--mid-blue); color: var(--white);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.user-name { font-size: 13px; color: rgba(255,255,255,.85); }
+.user-role {
+  font-size: 11px; color: rgba(255,255,255,.45);
+}
+.btn-signout {
+  font-size: 12px; color: rgba(255,255,255,.5);
+  background: none; border: none; cursor: pointer;
+  transition: color .15s;
+}
+.btn-signout:hover { color: var(--white); }
+
+/* ── NAV TABS ───────────────────────────────────────────────────────────── */
+.nav-bar {
+  background: var(--white); border-bottom: 1px solid var(--gray-200);
+  padding: 0 32px; display: flex; gap: 0;
+}
+.nav-tab {
+  padding: 14px 20px; font-size: 13px; font-weight: 500;
+  color: var(--gray-600); border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+  background: none; border-top: none; border-left: none; border-right: none;
+}
+.nav-tab:hover { color: var(--navy); }
+.nav-tab.active {
+  color: var(--navy); border-bottom-color: var(--navy); font-weight: 600;
+}
+
+/* ── PAGE LAYOUT ────────────────────────────────────────────────────────── */
+.page { display: none; padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+.page.active { display: block; }
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--navy); }
+.page-subtitle { font-size: 13px; color: var(--gray-600); margin-top: 4px; }
+
+/* ── MONTH FILTER BAR ───────────────────────────────────────────────────── */
+.filter-bar {
+  display: flex; gap: 12px; margin-bottom: 24px; align-items: center;
+}
+.filter-label { font-size: 13px; color: var(--gray-600); font-weight: 600; }
+.month-select {
+  padding: 8px 36px 8px 14px; border-radius: var(--radius);
+  border: 1px solid var(--gray-200); background: var(--white);
+  font-size: 13px; font-weight: 500; color: var(--gray-900);
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239CA3AF'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  box-shadow: var(--shadow); transition: border-color .15s;
+  min-width: 200px;
+}
+.month-select:focus { outline: none; border-color: var(--navy); }
+
+/* ── MONTH BLOCK ────────────────────────────────────────────────────────── */
+.month-block { margin-bottom: 20px; }
+.month-block.collapsed .month-items { display: none; }
+.month-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--navy); color: var(--white);
+  padding: 10px 16px; border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer; user-select: none;
+}
+.month-header-left { display: flex; align-items: center; gap: 10px; }
+.month-name { font-size: 14px; font-weight: 700; }
+.quarter-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; text-transform: uppercase; letter-spacing: .04em;
+}
+.q1 { background: var(--pale-blue); color: var(--navy); }
+.q2 { background: var(--lt-teal); color: var(--teal); }
+.q3 { background: var(--lt-gold); color: var(--gold); }
+.q4 { background: var(--lt-purple); color: var(--purple); }
+
+.month-progress {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: rgba(255,255,255,.7);
+}
+.progress-bar-wrap {
+  width: 80px; height: 4px; background: rgba(255,255,255,.2);
+  border-radius: 2px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--lt-green);
+  border-radius: 2px; transition: width .3s;
+}
+.collapse-icon {
+  font-size: 12px; color: rgba(255,255,255,.5);
+  transition: transform .2s;
+}
+.month-block.collapsed .collapse-icon { transform: rotate(-90deg); }
+
+/* ── GOAL STRIP ─────────────────────────────────────────────────────────── */
+.goal-strip {
+  background: var(--pale-blue); border-left: 3px solid var(--mid-blue);
+  padding: 10px 16px; font-size: 12px; color: var(--navy);
+  font-style: italic; line-height: 1.5;
+}
+
+/* ── ITEM CARD ──────────────────────────────────────────────────────────── */
+.month-items { border: 1px solid var(--gray-200); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.item-card {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 0;
+  border-bottom: 1px solid var(--gray-200);
+  transition: background .1s;
+}
+.item-card:last-child { border-bottom: none; }
+.item-card:nth-child(even) { background: var(--gray-100); }
+.item-card:nth-child(odd)  { background: var(--white); }
+.item-card.status-complete { background: var(--lt-green) !important; }
+.item-card.status-at-risk  { background: var(--lt-orange) !important; }
+.item-card.status-off-track{ background: var(--lt-red) !important; }
+
+.item-main { padding: 14px 16px; }
+.item-section {
+  font-size: 11px; color: var(--gray-400); font-style: italic;
+  margin-bottom: 3px;
+}
+.item-title {
+  font-size: 14px; font-weight: 600; color: var(--gray-900);
+  margin-bottom: 6px;
+}
+.item-instructions {
+  font-size: 12px; color: var(--gray-600); line-height: 1.5;
+  margin-bottom: 8px;
+}
+.item-submit {
+  font-size: 12px; color: var(--mid-blue); font-style: italic;
+}
+.item-submit::before { content: "Submit: "; font-style: normal; color: var(--gray-400); }
+
+/* ── BRANDAN COMMENT BANNER ─────────────────────────────────────────────── */
+.brandan-comment {
+  margin-top: 10px; padding: 10px 12px;
+  background: var(--lt-orange); border-left: 3px solid var(--orange);
+  border-radius: var(--radius); display: none;
+}
+.brandan-comment.visible { display: block; }
+.brandan-comment-label {
+  font-size: 11px; font-weight: 700; color: var(--orange);
+  text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px;
+}
+.brandan-comment-text { font-size: 12px; color: var(--gray-900); }
+.brandan-owner {
+  font-size: 11px; color: var(--orange); margin-top: 4px; font-weight: 600;
+}
+
+/* ── STATUS CONTROL ─────────────────────────────────────────────────────── */
+.item-controls {
+  padding: 14px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  border-left: 1px solid var(--gray-200);
+  align-items: flex-end; justify-content: flex-start;
+}
+.status-select {
+  width: 110px; padding: 6px 8px; border-radius: var(--radius);
+  border: 1px solid var(--gray-200); font-size: 12px; font-weight: 500;
+  background: var(--white); cursor: pointer; color: var(--gray-900);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239CA3AF'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 24px;
+}
+.status-select.status-complete { background-color: var(--lt-green); border-color: var(--green); color: var(--green); }
+.status-select.status-at-risk  { background-color: var(--lt-orange); border-color: var(--orange); color: var(--orange); }
+.status-select.status-off-track{ background-color: var(--lt-red); border-color: var(--red); color: var(--red); }
+.status-select.status-in-progress { background-color: var(--pale-blue); border-color: var(--mid-blue); color: var(--mid-blue); }
+
+.notes-input {
+  width: 110px; padding: 6px 8px; border-radius: var(--radius);
+  border: 1px solid var(--gray-200); font-size: 11px;
+  resize: none; height: 56px; font-family: inherit;
+  color: var(--gray-900); background: var(--white);
+}
+.notes-input:focus { outline: none; border-color: var(--mid-blue); }
+.save-btn {
+  width: 110px; padding: 6px; background: var(--navy);
+  color: var(--white); border: none; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.save-btn:hover { background: var(--mid-blue); }
+.save-btn.saving { background: var(--gray-400); cursor: not-allowed; }
+.save-btn.saved  { background: var(--green); }
+
+/* ── SUMMARY CARDS ──────────────────────────────────────────────────────── */
+.summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px; margin-bottom: 28px;
+}
+.summary-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow); border-top: 3px solid transparent;
+}
+.summary-card.complete { border-top-color: var(--green); }
+.summary-card.at-risk  { border-top-color: var(--orange); }
+.summary-card.off-track{ border-top-color: var(--red); }
+.summary-card.total    { border-top-color: var(--mid-blue); }
+.summary-number { font-size: 32px; font-weight: 800; color: var(--navy); line-height: 1; }
+.summary-label  { font-size: 12px; color: var(--gray-600); margin-top: 4px; }
+
+/* ── REGION OVERVIEW (Miriam lead view) ─────────────────────────────────── */
+.region-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-bottom: 24px;
+}
+.region-card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.region-card-header {
+  padding: 12px 16px; font-weight: 700; font-size: 13px; color: var(--white);
+}
+.region-card-header.sd  { background: var(--navy); }
+.region-card-header.ie  { background: var(--teal); }
+.region-card-header.nc  { background: var(--gold); }
+.region-card-body { padding: 16px; }
+.region-stat {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;
+}
+.region-stat:last-child { border-bottom: none; }
+.region-stat-label { color: var(--gray-600); }
+.region-stat-val   { font-weight: 700; color: var(--navy); }
+.region-stat-val.red    { color: var(--red); }
+.region-stat-val.orange { color: var(--orange); }
+.region-stat-val.green  { color: var(--green); }
+
+/* ── BRANDAN OPS VIEW ───────────────────────────────────────────────────── */
+.ops-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.ops-table th {
+  background: var(--navy); color: var(--white);
+  padding: 10px 14px; text-align: left; font-size: 12px;
+  font-weight: 600;
+}
+.ops-table td {
+  padding: 12px 14px; border-bottom: 1px solid var(--gray-200);
+  vertical-align: top;
+}
+.ops-table tr:last-child td { border-bottom: none; }
+.ops-table tr.at-risk  td { background: var(--lt-orange); }
+.ops-table tr.off-track td { background: var(--lt-red); }
+.status-pill {
+  display: inline-block; padding: 2px 10px; border-radius: 10px;
+  font-size: 11px; font-weight: 700;
+}
+.pill-at-risk   { background: var(--lt-orange); color: var(--orange); }
+.pill-off-track { background: var(--lt-red);    color: var(--red); }
+.corrective-input {
+  width: 100%; padding: 6px 8px; border: 1px solid var(--gray-200);
+  border-radius: var(--radius); font-size: 12px; font-family: inherit;
+}
+
+/* ── NOTIFICATION PANEL ─────────────────────────────────────────────────── */
+.notif-panel {
+  position: fixed; top: 56px; right: 0; width: 340px;
+  background: var(--white); box-shadow: var(--shadow-md);
+  border-left: 1px solid var(--gray-200);
+  height: calc(100vh - 56px); overflow-y: auto;
+  transform: translateX(100%); transition: transform .25s;
+  z-index: 200;
+}
+.notif-panel.open { transform: translateX(0); }
+.notif-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--gray-200);
+  font-weight: 700; font-size: 14px; color: var(--navy);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.notif-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--gray-400); }
+.notif-item {
+  padding: 14px 20px; border-bottom: 1px solid var(--gray-200);
+}
+.notif-item.unread { background: var(--pale-blue); }
+.notif-title { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.notif-body  { font-size: 12px; color: var(--gray-600); line-height: 1.5; }
+.notif-time  { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+.notif-empty { padding: 40px 20px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+/* ── LOADING SPINNER ────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block; width: 20px; height: 20px;
+  border: 2px solid var(--gray-200); border-top-color: var(--navy);
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 48px; color: var(--gray-600); font-size: 14px;
+}
+
+/* ── TOAST ──────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--gray-900); color: var(--white);
+  padding: 12px 20px; border-radius: var(--radius);
+  font-size: 13px; z-index: 9999; opacity: 0;
+  transform: translateY(8px); transition: all .2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--red); }
+
+/* ── SETUP GUIDE ─────────────────────────────────────────────────────────── */
+.setup-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 24px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.setup-card h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.setup-card p  { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+.code-block {
+  background: var(--gray-900); color: #86efac;
+  padding: 12px 16px; border-radius: var(--radius);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px; margin-top: 10px; overflow-x: auto;
+  white-space: pre;
+}
+
+/* ── MONTHLY GUIDANCE BANNER ────────────────────────────────────────────── */
+.monthly-guidance {
+  margin-top: 8px; padding: 8px 12px;
+  background: var(--lt-teal); border-left: 3px solid var(--teal);
+  border-radius: var(--radius); display: none;
+}
+.monthly-guidance-label {
+  font-size: 10px; font-weight: 700; color: var(--teal);
+  text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;
+}
+.monthly-guidance-text { font-size: 12px; color: var(--gray-900); line-height: 1.5; }
+.monthly-guidance-input {
+  width: 100%; margin-top: 6px; padding: 6px 8px;
+  border-radius: var(--radius); border: 1px solid var(--teal);
+  font-size: 11px; resize: none; height: 52px;
+  font-family: inherit; background: var(--white);
+}
+
+/* ── STATUS ALERT BANNER ─────────────────────────────────────────────────── */
+.status-alert-strip {
+  background: var(--lt-orange); border-left: 4px solid var(--orange);
+  padding: 12px 20px; border-radius: var(--radius); margin-bottom: 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.status-alert-strip.off-track {
+  background: var(--lt-red); border-left-color: var(--red);
+}
+.status-alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.status-alert-content { flex: 1; }
+.status-alert-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--orange); margin-bottom: 3px;
+}
+.status-alert-strip.off-track .status-alert-title { color: var(--red); }
+.status-alert-body { font-size: 12px; color: var(--gray-700); }
+
+/* ── ITEM SAVE ALERT (inline under item when flagged) ───────────────────── */
+.flagged-notice {
+  margin-top: 8px; padding: 8px 12px;
+  border-radius: var(--radius); font-size: 12px; font-weight: 600;
+  display: none;
+}
+.flagged-notice.at-risk   { background: var(--lt-orange); color: var(--orange); display:block; }
+.flagged-notice.off-track { background: var(--lt-red);    color: var(--red);    display:block; }
+
+@media (max-width: 768px) {
+  .header { padding: 0 16px; }
+  .page   { padding: 20px 16px; }
+  .region-grid { grid-template-columns: 1fr; }
+  .item-card { grid-template-columns: 1fr; }
+  .item-controls { border-left: none; border-top: 1px solid var(--gray-200); flex-direction: row; flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH SCREEN ────────────────────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">Options For All</div>
+    <div class="auth-title">CE Enhancement Project Portal</div>
+    <div class="auth-subtitle">Sign in with your OFA Microsoft 365 account to access your regional dashboard.</div>
+    <button class="btn-signin" onclick="signIn()">
+      <svg viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+      </svg>
+      Sign in with Microsoft
+    </button>
+    <p style="margin-top:20px;font-size:12px;color:var(--gray-400)">
+      Access is role-based. You will only see data for your region.
+    </p>
+  </div>
+</div>
+
+<!-- ── MAIN APP ───────────────────────────────────────────────────────────── -->
+<div id="app">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <div>
+        <div class="header-brand-name">Options For All</div>
+        <div class="header-project">CE Enhancement Project FY 2026–27</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="notification-bell" onclick="toggleNotifications()" title="Notifications">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span class="notification-badge" id="notif-badge">0</span>
+      </button>
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div>
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-role" id="user-role"></div>
+        </div>
+      </div>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+  <!-- View As bar — Brandan only -->
+  <div id="view-as-bar" style="display:none;background:#2E75B6;padding:6px 20px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600">View as:</span>
+    <select id="view-as-select" onchange="switchViewAs(this.value)"
+      style="padding:4px 10px;border-radius:4px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#1F3864">
+      <option value="ops">Brandan — Operations (My View)</option>
+      <option value="lead">Miriam — SD Lead</option>
+      <option value="sd">Miriam — SD Director</option>
+      <option value="ie">Serena — IE Director</option>
+      <option value="norcal">Franchesca — NorCal Director</option>
+      <option value="cpo">Myles — CPO</option>
+    </select>
+    <span style="font-size:11px;color:rgba(255,255,255,.6);font-style:italic">Admin preview — only visible to you</span>
+  </div>
+
+  <!-- Nav tabs — populated by role -->
+  <nav class="nav-bar" id="nav-bar"></nav>
+
+  <!-- Pages -->
+  <main id="pages-container"></main>
+
+</div>
+
+<!-- Notification panel -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-header">
+    Notifications
+    <button class="notif-close" onclick="toggleNotifications()">×</button>
+  </div>
+  <div id="notif-list"><div class="notif-empty">No notifications yet.</div></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SHAREPOINT SANDBOX DETECTION ─────────────────────────────────────────────
+// SharePoint previews HTML in a sandboxed iframe (about:srcdoc) which blocks
+// external scripts. Detect this and redirect to the actual file URL.
+(function() {
+  if (window.location.href.indexOf('about:') === 0 ||
+      window.location.href.indexOf('srcdoc') > -1 ||
+      document.referrer.indexOf('sharepoint.com') > -1 && window.self !== window.top) {
+    // We're in a SharePoint iframe preview — redirect parent to actual file
+    var actualUrl = "https://brandankelly.github.io/CE-Enhancement-Portal/";
+    if (window.top) {
+      window.top.location.href = actualUrl;
+    } else {
+      window.location.href = actualUrl;
+    }
+  }
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIGURATION — UPDATE THESE VALUES
+// ══════════════════════════════════════════════════════════════════════════════
+const CONFIG = {
+  // Azure AD App Registration
+  clientId:     "efb126fb-adf3-4629-8c0e-a97f68e2d0d5",
+  tenantId:     "3acd1361-5a23-4e0f-b84e-d626bdb3125e",
+
+  // SharePoint / Excel file location
+  siteId:       "ofall.sharepoint.com,6254cda9-af2a-42ae-8ca5-08636e2f250c,44b05cd7-c4ce-4e4a-ba7d-c157def86a04",
+  driveId:      "b!qc1UYiqvrkKMpQhjbi8lDNdcsETOxEpOun3BV974agT6nItavONnTryDEoSU1JPP",
   fileId:       "01CNZQWXTBXYJFNAXCCZCZMNHRZWN2T5EK",
 
   // Excel sheet names (must match exactly)
