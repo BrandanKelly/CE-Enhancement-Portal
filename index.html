@@ -935,11 +935,27 @@ async function signOut() {
 }
 
 async function getToken() {
-  try {
-    return await MsAuth.acquireTokenSilent();
-  } catch {
-    await MsAuth.loginRedirect();
+  // Use module-level accessToken first (most reliable)
+  if (accessToken) return accessToken;
+  
+  // Fall back to sessionStorage
+  const stored = sessionStorage.getItem('access_token');
+  if (stored && stored.includes('.')) {
+    accessToken = stored;
+    return stored;
   }
+  
+  // Try refresh
+  try {
+    const token = await MsAuth.acquireTokenSilent();
+    if (token && token.includes('.')) {
+      accessToken = token;
+      return token;
+    }
+  } catch(e) {}
+  
+  // Must re-login
+  await MsAuth.loginRedirect();
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
