@@ -928,6 +928,7 @@ async function writeCell(sheet, cellAddress, value) {
 // LOAD DATA — read status and notes from Excel
 // ══════════════════════════════════════════════════════════════════════════════
 async function loadData() {
+  console.log("loadData called, role:", currentRole?.view, "token:", accessToken ? "present" : "missing");
   const view = currentRole.view;
   const sheets = view === "ops" ? ["sd","ie","norcal"]
                : view === "lead" ? ["sd","ie","norcal"]
@@ -936,6 +937,7 @@ async function loadData() {
   for (const sheetKey of sheets) {
     const sheetName = CONFIG.sheets[sheetKey];
     const items     = TRACKER_ROWS[sheetKey] || [];
+    console.log(`Loading ${sheetKey}: sheet="${sheetName}", items=${items.length}`);
     if (!items.length) continue;
 
     try {
@@ -967,7 +969,98 @@ async function loadData() {
       });
     } catch (e) {
       console.error(`Failed to load data for ${sheetKey}:`, e);
+      showToast(`Failed to load ${sheetKey} data: ${e.message}`, "error");
     }
+  }
+
+  // For ops view — render flagged items after all data loaded
+  if (currentRole.view === "ops") {
+    renderFlaggedItems();
+  }
+
+  // Update all region stats
+  updateAllRegionStats();
+}
+
+function renderFlaggedItems() {
+  const tbody = document.getElementById("flagged-tbody");
+  const loading = document.getElementById("flagged-loading");
+  const table = document.getElementById("flagged-table");
+  const empty = document.getElementById("flagged-empty");
+  if (!tbody) return;
+
+  const flagged = [];
+  ["sd","ie","norcal"].forEach(key => {
+    const region = {sd:"San Diego",ie:"Inland Empire",norcal:"NorCal"}[key];
+    const items = TRACKER_ROWS[key] || [];
+    items.forEach(item => {
+      const st = statuses[`${key}-${item.row}`];
+      if (st === "At Risk" || st === "Off Track") {
+        flagged.push({ key, region, row:item.row, month:item.month, deliverable:item.deliverable, status:st, note:notes[`${key}-${item.row}`]||"" });
+      }
+    });
+  });
+
+  if (loading) loading.style.display = "none";
+
+  if (flagged.length === 0) {
+    if (empty) empty.style.display = "block";
+    if (table) table.style.display = "none";
+    return;
+  }
+
+  if (table) table.style.display = "table";
+  tbody.innerHTML = flagged.map(f => `
+    <tr class="${f.status === "Off Track" ? "off-track" : "at-risk"}">
+      <td>${f.region}</td>
+      <td>${f.month}</td>
+      <td><strong>${escHtml(f.deliverable)}</strong></td>
+      <td><span class="status-pill ${f.status === "Off Track" ? "pill-off-track" : "pill-at-risk"}">${f.status}</span></td>
+      <td>${escHtml(f.note)}</td>
+      <td><input class="corrective-input" placeholder="Add corrective action..." /></td>
+      <td><input class="corrective-input" placeholder="Owner..." style="width:80px"/></td>
+      <td><button onclick="saveBrandanComment('${f.key}',${f.row},this)" style="background:#1F3864;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">Save</button></td>
+    </tr>
+  `).join("");
+}
+
+function updateAllRegionStats() {
+  ["sd","ie","norcal"].forEach(key => {
+    const items = TRACKER_ROWS[key] || [];
+    let comp=0, ar=0, ot=0, ip=0;
+    items.forEach(item => {
+      const st = statuses[`${key}-${item.row}`] || "Not Started";
+      if (st === "Complete") comp++;
+      if (st === "At Risk") ar++;
+      if (st === "Off Track") ot++;
+      if (st === "In Progress") ip++;
+    });
+    const u = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    u(`stat-complete-${key}`, comp);
+    u(`stat-inprogress-${key}`, ip);
+    u(`stat-atrisk-${key}`, ar);
+    u(`stat-offtrack-${key}`, ot);
+    u(`sum-complete-${key}`, comp);
+    u(`sum-atrisk-${key}`, ar);
+    u(`sum-offtrack-${key}`, ot);
+  });
+}
+
+async function saveBrandanComment(sheetKey, row, btn) {
+  const tr = btn.closest("tr");
+  const inputs = tr.querySelectorAll(".corrective-input");
+  const comment = inputs[0]?.value || "";
+  const owner   = inputs[1]?.value || "";
+  try {
+    const tk = await getToken();
+    const bRow = BRANDAN_OFFSETS[sheetKey] + (TRACKER_ROWS[sheetKey]||[]).findIndex(i=>i.row===row);
+    await Promise.all([
+      writeCell(CONFIG.sheets.brandan, `I${bRow}`, comment, tk),
+      writeCell(CONFIG.sheets.brandan, `J${bRow}`, owner, tk),
+    ]);
+    showToast("Corrective action saved", "success");
+  } catch(e) {
+    showToast("Save failed: " + e.message, "error");
   }
 }
 
