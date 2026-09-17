@@ -383,7 +383,54 @@ body {
 }
 
 /* ── ITEM CARD ──────────────────────────────────────────────────────────── */
-.month-items { border: 1px solid var(--gray-200); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.month-items { border: 1px solid var(--gray-200); border-top: none; overflow: hidden; }
+
+/* ── MONTH THERMOMETER ──────────────────────────────────────────────────── */
+.month-thermo-wrap {
+  padding: 10px 16px 6px;
+  background: var(--white);
+  border: 1px solid var(--gray-200); border-top: none;
+}
+.month-thermo-track {
+  height: 16px; background: var(--gray-200); border-radius: 8px;
+  overflow: hidden; position: relative;
+}
+.month-thermo-fill {
+  height: 100%; background: var(--orange); border-radius: 8px;
+  transition: width .4s ease, background .35s ease;
+  min-width: 0;
+}
+.month-thermo-fill.all-complete { background: var(--green); }
+.month-thermo-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 5px;
+}
+.month-thermo-label {
+  font-size: 11px; color: var(--gray-600); font-weight: 600;
+}
+.month-thermo-pct {
+  font-size: 11px; color: var(--gray-400); font-weight: 700;
+}
+
+/* ── MONTH NOTES ────────────────────────────────────────────────────────── */
+.month-notes-wrap {
+  border: 1px solid var(--gray-200); border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: var(--gray-100); padding: 10px 16px 14px;
+}
+.month-notes-label {
+  font-size: 10px; font-weight: 700; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px;
+}
+.month-notes-input {
+  width: 100%; padding: 8px 10px; border-radius: var(--radius);
+  border: 1px solid var(--gray-200); font-size: 12px;
+  resize: vertical; min-height: 60px; font-family: inherit;
+  color: var(--gray-900); background: var(--white);
+  transition: border-color .15s;
+}
+.month-notes-input:focus { outline: none; border-color: var(--mid-blue); }
+.month-notes-input::placeholder { color: var(--gray-400); font-style: italic; }
 .item-card {
   display: grid;
   grid-template-columns: 1fr 120px;
@@ -411,11 +458,6 @@ body {
   font-size: 12px; color: var(--gray-600); line-height: 1.5;
   margin-bottom: 8px;
 }
-.item-submit {
-  font-size: 12px; color: var(--mid-blue); font-style: italic;
-}
-.item-submit::before { content: "Submit: "; font-style: normal; color: var(--gray-400); }
-
 /* ── BRANDAN COMMENT BANNER ─────────────────────────────────────────────── */
 .brandan-comment {
   margin-top: 10px; padding: 10px 12px;
@@ -713,11 +755,11 @@ body {
     </div>
   </header>
   <!-- View As bar — Brandan only -->
-  <div id="view-as-bar" style="display:none;background:#2E75B6;padding:6px 20px;display:flex;align-items:center;gap:12px">
+  <div id="view-as-bar" style="display:none;background:#2E75B6;padding:6px 20px;align-items:center;gap:12px">
     <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600">View as:</span>
     <select id="view-as-select" onchange="switchViewAs(this.value)"
       style="padding:4px 10px;border-radius:4px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#1F3864">
-      <option value="ops">Brandan — Operations (My View)</option>
+      <option value="admin">Brandan — Operations (My View)</option>
       <option value="lead">Miriam — SD Lead</option>
       <option value="sd">Miriam — SD Director</option>
       <option value="ie">Serena — IE Director</option>
@@ -798,8 +840,8 @@ const CONFIG = {
     "miriam@optionsforall.org":     { name: "Miriam Burke",  role: "SD Regional Director / Project Lead", view: "lead",     region: "San Diego",     sheet: "sd",     color: "#1F3864" },
     "serena@optionsforall.org":     { name: "Serena",        role: "Inland Empire Regional Director",     view: "director", region: "Inland Empire", sheet: "ie",     color: "#1F7A6E" },
     "franchesca@optionsforall.org": { name: "Franchesca",    role: "NorCal Regional Director",            view: "director", region: "NorCal",        sheet: "norcal", color: "#7F6000" },
-    "bkelly@optionsforall.org":     { name: "Brandan Kelly", role: "Director of Operations",              view: "ops",      region: "All Regions",   sheet: "brandan", color: "#7030A0", initial: "B" },
-    "myles@optionsforall.org":      { name: "Myles",          role: "Chief Program Officer",                view: "ops",      region: "All Regions",   sheet: "brandan", color: "#1F3864", initial: "MY", readonly: true },
+    "bkelly@optionsforall.org":     { name: "Brandan Kelly", role: "Director of Operations",              view: "admin",    region: "All Regions",   sheet: "brandan", color: "#7030A0", initial: "B" },
+    "myles@optionsforall.org":      { name: "Myles",          role: "Chief Program Officer",                view: "cpo",      region: "All Regions",   sheet: "brandan", color: "#1F3864", initial: "MY", readonly: true },
   },
 };
 
@@ -998,7 +1040,7 @@ async function writeCell(sheet, cellAddress, value) {
 async function loadData() {
   console.log("loadData called, role:", currentRole?.view, "token:", accessToken ? "present" : "missing");
   const view = currentRole.view;
-  const sheets = (view === "ops" || view === "lead" || view === "cpo")
+  const sheets = (view === "ops" || view === "lead" || view === "cpo" || view === "admin")
                ? ["sd","ie","norcal"]
                : [currentRole.sheet];
 
@@ -1059,8 +1101,8 @@ async function loadData() {
     }
   }
 
-  // Render flagged items for ops view
-  if (currentRole.view === "ops") {
+  // Render flagged items for ops / admin view
+  if (currentRole.view === "ops" || currentRole.view === "admin") {
     renderFlaggedItems();
   }
 
@@ -1357,6 +1399,13 @@ function buildNav() {
     tabs.push({ id:"cpo-dashboard", label:"Executive Dashboard" });
     tabs.push({ id:"all-regions",   label:"Regional Overview" });
     tabs.push({ id:"risk-log",      label:"Risk Log" });
+  } else if (view === "admin") {
+    tabs.push({ id:"cpo-dashboard", label:"Executive Dashboard" });
+    tabs.push({ id:"flagged",       label:"Flagged Items" });
+    tabs.push({ id:"my-items",      label:"San Diego — My Items" });
+    tabs.push({ id:"all-regions",   label:"All Regions Overview" });
+    tabs.push({ id:"risk-log",      label:"Risk Log" });
+    tabs.push({ id:"summary",       label:"SD Progress" });
   }
 
   nav.innerHTML = tabs.map((t, i) => `
@@ -1403,6 +1452,14 @@ function buildPages() {
     html += buildFlaggedPage();
     html += buildAllRegionsPage();
     html += buildRiskLogPage();
+  } else if (view === "admin") {
+    // Admin (Brandan) view: CPO dashboard, Flagged, SD items, All Regions, Risk Log, SD Progress
+    html += buildCPOPage();
+    html += buildFlaggedPage();
+    html += buildMyItemsPage("sd");
+    html += buildAllRegionsPage();
+    html += buildRiskLogPage();
+    html += buildSummaryPage();
   } else if (view === "cpo") {
     // CPO view: Executive dashboard, Regional overview, Risk Log
     html += buildCPOPage();
@@ -1425,12 +1482,13 @@ function buildPages() {
   const firstPage = container.querySelector(".page");
   if (firstPage) firstPage.classList.add("active");
 
-  // Initialize month filter — apply current dropdown value now that DOM is ready
+  // Initialize month filter and notes after DOM is ready
   setTimeout(() => {
     ["sd","ie","norcal"].forEach(key => {
       const sel = document.getElementById(`month-dropdown-${key}`);
       if (sel) filterMonth(sel.value, key);
     });
+    loadMonthNotes();
   }, 0);
 }
 
@@ -1486,6 +1544,22 @@ function buildMyItemsPage(sheetKey) {
         </div>
         ${goal ? `<div class="goal-strip">${goal}</div>` : ""}
         <div class="month-items">${cards}</div>
+        <div class="month-thermo-wrap">
+          <div class="month-thermo-track">
+            <div class="month-thermo-fill" id="thermo-fill-${sheetKey}-${month.replace(/ /g,'-')}" style="width:0%"></div>
+          </div>
+          <div class="month-thermo-meta">
+            <span class="month-thermo-label" id="thermo-label-${sheetKey}-${month.replace(/ /g,'-')}">0 of ${monthItems.length} complete</span>
+            <span class="month-thermo-pct" id="thermo-pct-${sheetKey}-${month.replace(/ /g,'-')}">0%</span>
+          </div>
+        </div>
+        <div class="month-notes-wrap">
+          <div class="month-notes-label">Ops Notes — ${month}</div>
+          <textarea class="month-notes-input"
+                    placeholder="Due dates, specifics, follow-ups, context..."
+                    data-month-note="month-note-${sheetKey}-${month}"
+                    onblur="saveMonthNote('${sheetKey}','${month.replace(/'/g,"\\'").replace(/"/g,'\\"')}',this)"></textarea>
+        </div>
       </div>
     `;
   }).join("");
@@ -1518,7 +1592,6 @@ function buildItemCard(sheetKey, item) {
         <div class="item-section">${escHtml(item.section)}</div>
         <div class="item-title">${escHtml(item.deliverable)}</div>
         <div class="item-instructions">${escHtml(item.instructions)}</div>
-        <div class="item-submit">${escHtml(item.submit)}</div>
         <div class="monthly-guidance" id="guidance-${sheetKey}-${item.row}">
           <div class="monthly-guidance-label">📋 Monthly Guidance — Brandan</div>
           <div class="monthly-guidance-text"></div>
@@ -2015,11 +2088,23 @@ function updateMonthProgress(sheetKey) {
     });
 
     const pct     = monthItems.length ? (complete / monthItems.length * 100) : 0;
+    const allDone = complete === monthItems.length && monthItems.length > 0;
     const key     = month.replace(/ /g,"-");
     const bar     = document.getElementById(`prog-${sheetKey}-${key}`);
     const text    = document.getElementById(`prog-text-${sheetKey}-${key}`);
     if (bar)  bar.style.width = pct + "%";
     if (text) text.textContent = `${complete} of ${monthItems.length}`;
+
+    // Update thermometer
+    const thermoFill  = document.getElementById(`thermo-fill-${sheetKey}-${key}`);
+    const thermoLabel = document.getElementById(`thermo-label-${sheetKey}-${key}`);
+    const thermoPct   = document.getElementById(`thermo-pct-${sheetKey}-${key}`);
+    if (thermoFill) {
+      thermoFill.style.width = pct + "%";
+      thermoFill.classList.toggle("all-complete", allDone);
+    }
+    if (thermoLabel) thermoLabel.textContent = `${complete} of ${monthItems.length} complete${allDone ? " ✓" : ""}`;
+    if (thermoPct)   thermoPct.textContent   = Math.round(pct) + "%";
   });
 
   // Update summary stats
@@ -2142,7 +2227,7 @@ async function alertBrandan(sheetKey, rowNum, status, notes) {
   sessionStorage.setItem(alertKey, JSON.stringify(existing));
 
   // If current user IS Brandan, show a prominent in-portal alert immediately
-  if (currentRole.view === "ops") {
+  if (currentRole.view === "ops" || currentRole.view === "admin") {
     showStatusAlert(status, dirName, region, deliv);
   }
 
@@ -2208,9 +2293,25 @@ async function saveGuidance(sheetKey, row, btn) {
   }
 }
 
+// ── MONTH NOTES (localStorage) ────────────────────────────────────────────────
+function saveMonthNote(sheetKey, month, el) {
+  try {
+    localStorage.setItem(`month-note-${sheetKey}-${month}`, el.value);
+  } catch(e) { /* storage may be unavailable */ }
+}
+
+function loadMonthNotes() {
+  document.querySelectorAll("[data-month-note]").forEach(el => {
+    try {
+      const val = localStorage.getItem(el.dataset.monthNote);
+      if (val) el.value = val;
+    } catch(e) {}
+  });
+}
+
 function switchViewAs(viewKey) {
   const viewMap = {
-    "ops":    { name:"Brandan Kelly", role:"Director of Operations",         view:"ops",      region:"All Regions",   sheet:"brandan", color:"#7030A0", initial:"B" },
+    "admin":  { name:"Brandan Kelly", role:"Director of Operations",         view:"admin",    region:"All Regions",   sheet:"brandan", color:"#7030A0", initial:"B" },
     "lead":   { name:"Miriam Burke",  role:"SD Director / Project Lead",     view:"lead",     region:"San Diego",     sheet:"sd",      color:"#1F3864", initial:"M" },
     "sd":     { name:"Miriam Burke",  role:"SD Regional Director",           view:"director", region:"San Diego",     sheet:"sd",      color:"#1F3864", initial:"M" },
     "ie":     { name:"Serena",        role:"Inland Empire Regional Director", view:"director", region:"Inland Empire", sheet:"ie",      color:"#1F7A6E", initial:"S" },
@@ -2242,7 +2343,7 @@ function switchViewAs(viewKey) {
 }
 
 function loadPendingAlerts() {
-  if (currentRole.view !== "ops") return;
+  if (currentRole.view !== "ops" && currentRole.view !== "admin") return;
   const alerts = JSON.parse(sessionStorage.getItem("pending_alerts") || "[]");
   const unread = alerts.filter(a => a.unread);
   if (!unread.length) return;
